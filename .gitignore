@@ -1,0 +1,32 @@
+# AWS credentials and configuration
+.aws/
+aws/
+**/.aws/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing directories
+.testing_funnies/
+**/.testing_funnies/
+testing_funnies/
+**/testing_funnies/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+*.env
