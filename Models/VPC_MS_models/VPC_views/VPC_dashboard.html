@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VPC Dashboard</title>
+    <link
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <h1>Gestión de VPCs</h1>
+
+    <!-- Botón para ver VPCs existentes -->
+    <button id="getVpcs">Ver VPCs Existentes</button>
+    <div id="vpcList"></div>
+
+    <hr />
+
+    <!-- Formulario para crear una VPC -->
+    <h2>Create a new VPC</h2>
+    <form id="createForm">
+      <label>name of the VPC:</label>
+      <input type="text" id="vpcName" required />
+
+      <label>CIDR block (ej. 10.0.0.0/16):</label>
+      <input type="text" id="vpcBlock" required />
+
+      <button type="submit">Crear</button>
+    </form>
+
+    <hr />
+
+    <!-- Formulario para eliminar VPC -->
+    <h2>Eliminar una VPC</h2>
+    <form id="deleteForm">
+      <label>ID de la VPC:</label>
+      <input type="text" id="vpcId" required />
+
+      <button type="submit">Eliminar</button>
+    </form>
+
+    <script>
+      // Ver VPCs existentes
+      document.getElementById("getVpcs").onclick = async () => {
+        const res = await fetch("/VPC_in_existance");
+        const data = await res.json();
+        const container = document.getElementById("vpcList");
+
+        if (!data.success) {
+          container.textContent = "Error: " + data.Error;
+          return;
+        }
+
+        const vpcs = data.data;
+
+        // Construimos tabla HTML dinámicamente
+        let table = `
+        <table border="1" cellpadding="6" style="border-collapse:collapse; margin-top:10px;">
+            <thead>
+                <tr>
+                    <th>ID de VPC</th>
+                    <th>Nombre</th>
+                    <th>CIDR Block</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+        for (const [id, info] of Object.entries(vpcs)) {
+          table += `
+            <tr>
+                <td>${id}</td>
+                <td>${info.name}</td>
+                <td>${info.cidr_block}</td>
+                <td>${info.state}</td>
+            </tr>
+        `;
+        }
+
+        table += "</tbody></table>";
+        container.innerHTML = table;
+      };
+
+      // Crear una nueva VPC
+      document.getElementById("createForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const vpc_name = document.getElementById("vpcName").value;
+        const block = document.getElementById("vpcBlock").value;
+
+        const res = await fetch(`/Create_VPC`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ vpc_name, block }),
+        });
+
+        const data = await res.json();
+        alert(JSON.stringify(data, null, 2));
+      };
+
+      // Eliminar VPC
+      document.getElementById("deleteForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const vpc_id = document.getElementById("vpcId").value;
+
+        const res = await fetch(`/Delete_VPC`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ vpc_id }),
+        });
+
+        const data = await res.json();
+        alert(JSON.stringify(data, null, 2));
+      };
+    </script>
+  </body>
+</html>
