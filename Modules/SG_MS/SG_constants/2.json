@@ -1,0 +1,38 @@
+"Group_Name": "Pruebita",
+"Group_permits": {
+  "tcp": {
+    "Exit_port": 443,
+    "Enter_port": 443
+  },
+  "udp": {
+    "Exit_port": 88,
+    "Enter_port": 88
+  },
+  "icmp": {
+    "Exit_port": -1,
+    "Enter_port": -1
+  },
+  "-1": {
+    "Exit_port": "N/A",
+    "Enter_port": "N/A"
+  }
+}
+
+{
+  "Return": "True",
+  "SecurityGroupRules": [],
+  "ResponseMetadata": {
+    "RequestId": "5b1a7ea3-5bf5-45cf-a7fa-dac55ab923d8",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "x-amzn-requestid": "5b1a7ea3-5bf5-45cf-a7fa-dac55ab923d8",
+      "cache-control": "no-cache, no-store",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+      "content-type": "text/xml;charset=UTF-8",
+      "content-length": "270",
+      "date": "Sun, 09 Nov 2025 19:20:54 GMT",
+      "server": "AmazonEC2"
+    },
+    "RetryAttempts": 0
+  }
+}
