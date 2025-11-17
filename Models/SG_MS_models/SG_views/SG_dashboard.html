@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Security Group Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        label {
+            display: inline-block;
+            width: 200px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        textarea {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Security Group Management Dashboard</h1>
+
+    <h2>1. Check Existing Security Groups</h2>
+    <button onclick="fetchExistingSGs()">Fetch Security Groups</button>
+    <pre id="existing-sgs-output"></pre>
+
+    <h2>2. Check Existing Security Group Rules</h2>
+    <button onclick="fetchExistingSGRs()">Fetch Security Group Rules</button>
+    <pre id="existing-sgrs-output"></pre>
+
+    <h2>3. Create New Security Group</h2>
+    <form id="create-sg-form">
+        <label for="vpc_id">VPC ID:</label>
+        <input type="text" id="vpc_id" name="vpc_id" required><br>
+        <label for="groupName">Group Name:</label>
+        <input type="text" id="groupName" name="groupName" required><br>
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description" required><br>
+        <button type="button" onclick="createSG()">Create SG</button>
+    </form>
+    <pre id="create-sg-output"></pre>
+
+    <h2>4. Create Ingress Rule</h2>
+    <form id="create-ingress-form">
+        <label for="ingress_group_id">Group ID:</label>
+        <input type="text" id="ingress_group_id" name="group_id" required><br>
+        <label for="ingress_permissions">Permissions (JSON):</label>
+        <textarea id="ingress_permissions" name="permissions" required rows="5" cols="50"></textarea><br>
+        <button type="button" onclick="createIngressRule()">Create Ingress Rule</button>
+    </form>
+    <pre id="create-ingress-output"></pre>
+
+    <h2>5. Create Egress Rule</h2>
+    <form id="create-egress-form">
+        <label for="egress_group_id">Group ID:</label>
+        <input type="text" id="egress_group_id" name="group_id" required><br>
+        <label for="egress_permissions">Permissions (JSON):</label>
+        <textarea id="egress_permissions" name="permissions" required rows="5" cols="50"></textarea><br>
+        <button type="button" onclick="createEgressRule()">Create Egress Rule</button>
+    </form>
+    <pre id="create-egress-output"></pre>
+
+    <h2>6. Revoke Ingress Rule</h2>
+    <form id="revoke-ingress-form">
+        <label for="revoke_ingress_group_id">Group ID:</label>
+        <input type="text" id="revoke_ingress_group_id" name="group_id" required><br>
+        <label for="revoke_ingress_rule_id">Rule IDs (comma-separated):</label>
+        <input type="text" id="revoke_ingress_rule_id" name="rule_id" required><br>
+        <button type="button" onclick="revokeIngressRule()">Revoke Ingress Rule</button>
+    </form>
+    <pre id="revoke-ingress-output"></pre>
+
+    <h2>7. Revoke Egress Rule</h2>
+    <form id="revoke-egress-form">
+        <label for="revoke_egress_group_id">Group ID:</label>
+        <input type="text" id="revoke_egress_group_id" name="group_id" required><br>
+        <label for="revoke_egress_rule_id">Rule IDs (comma-separated):</label>
+        <input type="text" id="revoke_egress_rule_id" name="rule_id" required><br>
+        <button type="button" onclick="revokeEgressRule()">Revoke Egress Rule</button>
+    </form>
+    <pre id="revoke-egress-output"></pre>
+
+    <h2>8. Delete Security Group</h2>
+    <form id="delete-sg-form">
+        <label for="delete_group_id">Group ID:</label>
+        <input type="text" id="delete_group_id" name="group_id" required><br>
+        <button type="button" onclick="deleteSG()">Delete SG</button>
+    </form>
+    <pre id="delete-sg-output"></pre>
+
+    <script>
+        function fetchExistingSGs() {
+            document.getElementById('existing-sgs-output').textContent = 'Loading...';
+            fetch('/SG_in_existance')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('existing-sgs-output').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById('existing-sgs-output').textContent = 'Error: ' + error;
+                });
+        }
+
+        function fetchExistingSGRs() {
+            document.getElementById('existing-sgrs-output').textContent = 'Loading...';
+            fetch('/SGR_in_existance')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('existing-sgrs-output').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById('existing-sgrs-output').textContent = 'Error: ' + error;
+                });
+        }
+
+        function createSG() {
+            const form = document.getElementById('create-sg-form');
+            const data = {
+                vpc_id: form.vpc_id.value,
+                groupName: form.groupName.value,
+                description: form.description.value
+            };
+            document.getElementById('create-sg-output').textContent = 'Processing...';
+            fetch('/Create_SG', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById('create-sg-output').textContent = JSON.stringify(result, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('create-sg-output').textContent = 'Error: ' + error;
+            });
+        }
+
+        function createIngressRule() {
+            const form = document.getElementById('create-ingress-form');
+            let permissions;
+            try {
+                permissions = JSON.parse(form.permissions.value);
+            } catch (e) {
+                alert('Invalid JSON for permissions');
+                return;
+            }
+            const data = {
+                group_id: form.group_id.value,
+                permissions: permissions
+            };
+            document.getElementById('create-ingress-output').textContent = 'Processing...';
+            fetch('/Create_ingress_rule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById('create-ingress-output').textContent = JSON.stringify(result, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('create-ingress-output').textContent = 'Error: ' + error;
+            });
+        }
+
+        function createEgressRule() {
+            const form = document.getElementById('create-egress-form');
+            let permissions;
+            try {
+                permissions = JSON.parse(form.permissions.value);
+            } catch (e) {
+                alert('Invalid JSON for permissions');
+                return;
+            }
+            const data = {
+                group_id: form.group_id.value,
+                permissions: permissions
+            };
+            document.getElementById('create-egress-output').textContent = 'Processing...';
+            fetch('/Create_egress_rule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById('create-egress-output').textContent = JSON.stringify(result, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('create-egress-output').textContent = 'Error: ' + error;
+            });
+        }
+
+        function revokeIngressRule() {
+            const form = document.getElementById('revoke-ingress-form');
+            const data = {
+                group_id: form.group_id.value,
+                rule_id: form.rule_id.value.split(',').map(id => id.trim())
+            };
+            document.getElementById('revoke-ingress-output').textContent = 'Processing...';
+            fetch('/Revoke_ingress_rule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById('revoke-ingress-output').textContent = JSON.stringify(result, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('revoke-ingress-output').textContent = 'Error: ' + error;
+            });
+        }
+
+        function revokeEgressRule() {
+            const form = document.getElementById('revoke-egress-form');
+            const data = {
+                group_id: form.group_id.value,
+                rule_id: form.rule_id.value.split(',').map(id => id.trim())
+            };
+            document.getElementById('revoke-egress-output').textContent = 'Processing...';
+            fetch('/Revoke_egress_rule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById('revoke-egress-output').textContent = JSON.stringify(result, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('revoke-egress-output').textContent = 'Error: ' + error;
+            });
+        }
+
+        function deleteSG() {
+            const form = document.getElementById('delete-sg-form');
+            const data = {
+                group_id: form.group_id.value
+            };
+            document.getElementById('delete-sg-output').textContent = 'Processing...';
+            fetch('/Delete_sg', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById('delete-sg-output').textContent = JSON.stringify(result, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('delete-sg-output').textContent = 'Error: ' + error;
+            });
+        }
+    </script>
+</body>
+</html>
