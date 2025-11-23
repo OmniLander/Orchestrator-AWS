@@ -16,7 +16,7 @@ app.register_blueprint(EC2_controller_bp)
 
 @app.route('/')
 def vpcs():
-    return redirect(url_for('EC2_controller_bp.EC2_in_existance'))
+    return redirect(url_for('EC2_controller_bp.Ec2_dashboard'))
 
 if __name__ == '__main__':
     print(app.url_map)

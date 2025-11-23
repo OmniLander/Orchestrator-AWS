@@ -1,4 +1,5 @@
 import boto3
+import requests
 from botocore.exceptions import NoCredentialsError, ClientError
 
 def ec2_in_existance():
