@@ -1,0 +1,44 @@
+{
+    "Subnet": {
+        "AvailabilityZoneId": "use1-az1",
+        "MapCustomerOwnedIpOnLaunch": False,
+        "OwnerId": "644209053465",
+        "AssignIpv6AddressOnCreation": False,
+        "Ipv6CidrBlockAssociationSet": [],
+        "Tags": [
+            {
+                "Key": "Name",
+                "Value": "fornitesito"
+            }
+        ],
+        "SubnetArn": "arn:aws:ec2:us-east-1: 644209053465:subnet/subnet-0cc615b1c12f1c59a",
+        "EnableDns64": False,
+        "Ipv6Native": False,
+        "PrivateDnsNameOptionsOnLaunch": {
+            "HostnameType": "ip-name",
+            "EnableResourceNameDnsARecord": False,
+            "EnableResourceNameDnsAAAARecord": False
+        },
+        "SubnetId": "subnet-0cc615b1c12f1c59a",
+        "State": "available",
+        "VpcId": "vpc-03c6e5b69b67b4e23",
+        "CidrBlock": "10.0.20.0/24",
+        "AvailableIpAddressCount": 251,
+        "AvailabilityZone": "us-east-1a",
+        "DefaultForAz": False,
+        "MapPublicIpOnLaunch": False
+    },
+    "ResponseMetadata": {
+        "RequestId": "7f3a24fa-3c2a-4bbc-b788-bc28952119bb",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "x-amzn-requestid": "7f3a24fa-3c2a-4bbc-b788-bc28952119bb",
+            "cache-control": "no-cache, no-store",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-type": "text/xml;charset=UTF-8",
+            "content-length": "1227",
+            "date": "Sun,23 Nov 2025 06: 08: 46 GMT", "server": "AmazonEC2"
+        },
+        "RetryAttempts": 0
+    }
+}

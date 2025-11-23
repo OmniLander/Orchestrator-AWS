@@ -1,8 +1,8 @@
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
-from Modules.VPC_MS.VPC_Constants.VPC_Creation import create_vpc
+from Modules.VPC_MS.VPC_Constants.VPC_creation import create_vpc, create_subnet
 from Modules.VPC_MS.VPC_Constants.VPC_elimination import delete_vpc
-from Modules.VPC_MS.VPC_Constants.VPC_Verification import vpc_in_existance
+from Modules.VPC_MS.VPC_Constants.VPC_verification import vpc_in_existance, subnets_in_existance
 from flask import Blueprint, render_template, request, redirect, url_for, Response, jsonify
 
 VPC_controller_bp = Blueprint("VPC_controller_bp", __name__,
@@ -23,6 +23,30 @@ def VPC_in_existance():
     
     except Exception as e:
         print(f"Unexpected error {e}")
+        return jsonify({"Error": str(e)}), 500
+    
+@VPC_controller_bp.route('/Subnets_in_existance', methods=["GET"])
+def Subnets_in_existance():
+    try:
+        VPCs = subnets_in_existance()
+        return jsonify({"success": True, "data": VPCs})
+    
+    except Exception as e:
+        print(f"Unexpected error {e}")
+        return jsonify({"Error": str(e)}), 500
+    
+@VPC_controller_bp.route('/Create_subnet', methods=['POST'])
+def Create_subnet():
+    try:
+        data = request.get_json()
+        vpc_id = data.get('vpc_id')
+        cidr_block = data.get('cidr_block')
+        subnet_id = data.get('subnet_name')
+        reply= create_subnet(vpc_id, cidr_block, subnet_id)
+        return jsonify({"success": True, "data": reply})
+    except Exception as e:
+        print(e)    
+        
         return jsonify({"Error": str(e)}), 500
 
 @VPC_controller_bp.route('/Create_VPC', methods=["POST"])

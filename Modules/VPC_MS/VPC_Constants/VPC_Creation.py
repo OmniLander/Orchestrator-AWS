@@ -39,3 +39,40 @@ def create_vpc(vpc_name, block):
         print(f"Unexpected error {e}")
         return None
     
+def create_subnet(vpc_id, cidr_block, subnet_name):
+    try:
+        subnet_client = boto3.client('ec2')
+        response = subnet_client.create_subnet(
+            VpcId = vpc_id,
+            CidrBlock = cidr_block,
+            AvailabilityZone = 'us-east-1a',
+            TagSpecifications=[
+                {
+                    'ResourceType': 'subnet',
+                    'Tags': [
+                        {
+                            'Key': 'Name',
+                            'Value': subnet_name
+                        },
+                    ]
+                },
+            ]
+        )
+        subnet_info = {
+            "subnet_id" : response['Subnet']['SubnetId'],
+            "subnet_state": response['Subnet']['State'] 
+            }
+        return subnet_info
+    except NoCredentialsError as e:
+        print(f"There's been an error with the credentials:{e}")
+        return None
+
+    except ClientError as e:
+        print(f"There's been an error with the client side {e}")
+        return None
+
+    except Exception as e:
+        print(f"Unexpected error {e}")
+        return None
+
+print(create_subnet("vpc-03c6e5b69b67b4e23", "10.0.30.0/24", "fornitesito"))

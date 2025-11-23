@@ -3,8 +3,8 @@ from botocore.exceptions import NoCredentialsError, ClientError
 
 def vpc_in_existance():
     try:
-        vpc_resource = boto3.client('ec2')
-        response = vpc_resource.describe_vpcs()
+        vpc_cleint = boto3.client('ec2')
+        response = vpc_cleint.describe_vpcs()
         
         vpcs = {}
 
@@ -40,4 +40,46 @@ def vpc_in_existance():
         print(f"Unexpected error {e}")
         return None
 
-print(vpc_in_existance())
+def subnets_in_existance():
+    try:
+        vpc_client = boto3.client('ec2')
+        response = vpc_client.describe_subnets()
+        subnets = {}
+
+        for subnet in response['Subnets']:
+            subnet_vpc = subnet['VpcId']
+            subnet_id = subnet['SubnetId']
+            subnet_zone = subnet['AvailabilityZone']
+            subnet_state = subnet['State']
+            subnet_cidr = subnet['CidrBlock']
+            
+            if 'Tags' in subnet:
+                for tag in subnet['Tags']:
+                     if tag['Key'] == 'Name':
+                        subnet_name = tag.get('Value', 'N/A')
+                        break
+            
+            if subnet_vpc not in subnets:
+                subnets[subnet_vpc] = []
+
+            subnets[subnet_vpc].append({
+                "name" : subnet_name,
+                "subnet_id" : subnet_id,
+                "zone" : subnet_zone,
+                "state" : subnet_state,
+                "block" : subnet_cidr  
+            })
+
+        return subnets
+    
+    except NoCredentialsError as e:
+        print(f"There's been an error with the credentials:{e}")
+        return None
+        
+    except ClientError as e:
+        print(f"There's been an error with the client side {e}")
+        return None
+    
+    except Exception as e:
+        print(f"Unexpected error {e}")
+        return None
