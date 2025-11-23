@@ -90,5 +90,3 @@ def sgr_id():
     except Exception as e:
         print(f"Unexpected error {e}")
         return None
-    
-print(sgr_id())

@@ -20,7 +20,7 @@ def SG_in_existance():
 
     try:
         reply = sg_in_existance()
-        return jsonify({"success": True, "Data": reply})
+        return jsonify({"success": True, "data": reply})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -29,7 +29,7 @@ def SG_in_existance():
 def SGR_in_existance():
     try:
         reply = sgr_id()
-        return jsonify({"success": True, "Data": reply})
+        return jsonify({"success": True, "data": reply})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
