@@ -3,68 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Security Group Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-        }
-        h2 {
-            color: #555;
-            margin-top: 30px;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 10px 0;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        pre {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
-            overflow-x: auto;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        form {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 4px;
-            margin: 10px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        label {
-            display: inline-block;
-            width: 200px;
-            margin: 10px 0;
-            font-weight: bold;
-        }
-        input[type="text"] {
-            width: 300px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        textarea {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-    </style>
+
+    <link rel="stylesheet" href="{{ url_for('SG_controller_bp.static', filename='SG_dashboard.css') }}">
+    <script src="{{ url_for('SG_controller_bp.static', filename='SG_dashboard.js') }}"></script>
+
 </head>
 <body>
     <h1>Security Group Management Dashboard</h1>
