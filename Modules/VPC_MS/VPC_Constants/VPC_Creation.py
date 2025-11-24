@@ -75,4 +75,3 @@ def create_subnet(vpc_id, cidr_block, subnet_name):
         print(f"Unexpected error {e}")
         return None
 
-print(create_subnet("vpc-03c6e5b69b67b4e23", "10.0.30.0/24", "fornitesito"))

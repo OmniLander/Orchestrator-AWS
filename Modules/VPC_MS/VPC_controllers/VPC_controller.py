@@ -1,8 +1,8 @@
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
-from Modules.VPC_MS.VPC_Constants.VPC_creation import create_vpc, create_subnet
-from Modules.VPC_MS.VPC_Constants.VPC_elimination import delete_vpc
-from Modules.VPC_MS.VPC_Constants.VPC_verification import vpc_in_existance, subnets_in_existance
+from Modules.VPC_MS.VPC_constants.VPC_creation import create_vpc, create_subnet
+from Modules.VPC_MS.VPC_constants.VPC_elimination import delete_vpc, delete_subnet
+from Modules.VPC_MS.VPC_constants.VPC_verification import vpc_in_existance, subnets_in_existance
 from flask import Blueprint, render_template, request, redirect, url_for, Response, jsonify
 
 VPC_controller_bp = Blueprint("VPC_controller_bp", __name__,
@@ -69,6 +69,18 @@ def Delete_VPC():
         data = request.get_json()
         vpc_id = data.get('vpc_id')
         reply = delete_vpc(vpc_id)
+        return jsonify({"success": True, "data": reply})
+    
+    except Exception as e:
+        print(e)    
+        return jsonify({"Error": str(e)}), 500
+    
+@VPC_controller_bp.route('/Delete_subnet', methods=["POST"])
+def Delete_subnet():
+    try:
+        data = request.get_json()
+        subnet_id = data.get('subnet_id')
+        reply = delete_subnet(subnet_id)
         return jsonify({"success": True, "data": reply})
     
     except Exception as e:
