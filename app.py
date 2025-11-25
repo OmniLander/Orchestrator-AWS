@@ -16,7 +16,7 @@ app.register_blueprint(VPC_controller_bp)
 
 @app.route('/')
 def vpcs():
-    return redirect(url_for('VPC_controller_bp.vpc_dashboard'))
+    return redirect(url_for('VPC_controller_bp.VPC_dashboard'))
 
 if __name__ == '__main__':
     print(app.url_map)

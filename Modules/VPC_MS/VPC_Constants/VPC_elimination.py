@@ -25,12 +25,11 @@ def delete_vpc(vpc_id):
     
 def delete_subnet(subnet_id):
     try:
-        vpc_client = boto3.client('ec2')
-
-        response = vpc_client.delete_vpc(
-            VpcId = subnet_id,
+        subnet_client = boto3.client('ec2')
+        response = subnet_client.delete_subnet(
+            SubnetId = subnet_id,
         )
-        reply = f"The VPC with id {subnet_id} have been succesfully deleted" 
+        reply = f"The subnet with id {subnet_id} have been succesfully deleted" 
         return reply
     
     except NoCredentialsError as e:
