@@ -21,14 +21,14 @@ def create_ACL(vpc_id, acl_name):
 
         return f'Success'
 
-    except NoCredentialsError as e:
+    except NoCredentialserror as e:
         print(f"There's been an error with the credentials:{e}")
-        return None
+        return {"error": str(e)}    
         
-    except ClientError as e:
+    except Clienterror as e:
         print(f"There's been an error with the client side {e}")
-        return None
+        return {"error": str(e)}    
     
     except Exception as e:
         print(f"Unexpected error {e}")
-        return None
+        return {"error": str(e)}    

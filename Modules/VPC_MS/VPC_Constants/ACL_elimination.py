@@ -12,12 +12,36 @@ def delete_acl(acl_id):
 
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
-        return None
+        return {"error": str(e)}    
         
-    except ClientError as e:
+    except Clienterror as e:
         print(f"There's been an error with the client side {e}")
-        return None
+        return {"error": str(e)}    
     
     except Exception as e:
         print(f"Unexpected error {e}")
-        return None
+        return {"error": str(e)}    
+
+
+def delete_acl_entry(acl_id, rule_number, egress: bool):
+    try:
+        acl_client = boto3.client('ec2')
+        response = acl_client.delete_network_acl_entry(
+            NetworkAclId = acl_id,
+            RuleNumber = int(rule_number),
+            Egress = egress
+        )
+    
+        return  f'The acl entry with the id {rule_number}, have been succesfully deleted'
+
+    except NoCredentialsError as e:
+        print(f"There's been an error with the credentials:{e}")
+        return {"error": str(e)}
+            
+    except Clienterror as e:
+        print(f"There's been an error with the client side {e}")    
+        return {"error": str(e)}    
+    
+    except Exception as e:
+        print(f"Unexpected error {e}")
+        return {"error": str(e)}

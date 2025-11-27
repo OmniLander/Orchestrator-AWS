@@ -29,15 +29,15 @@ def create_vpc(vpc_name, block):
     
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
-        return None
+        return {"success": False, "error": str(e)}
 
     except ClientError as e:
         print(f"There's been an error with the client side {e}")
-        return None
+        return {"success": False, "error": str(e)}
 
     except Exception as e:
         print(f"Unexpected error {e}")
-        return None
+        return {"success": False, "error": str(e)}
     
 def create_subnet(vpc_id, cidr_block, subnet_name):
     try:
@@ -65,13 +65,13 @@ def create_subnet(vpc_id, cidr_block, subnet_name):
         return subnet_info
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
-        return None
+        return {"success": False, "error": str(e)}
 
     except ClientError as e:
         print(f"There's been an error with the client side {e}")
-        return None
+        return {"success": False, "error": str(e)}
 
     except Exception as e:
         print(f"Unexpected error {e}")
-        return None
+        return {"success": False, "error": str(e)}
 
