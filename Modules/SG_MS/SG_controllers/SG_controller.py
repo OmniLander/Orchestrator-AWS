@@ -17,12 +17,12 @@ def SG_dashboard():
 #endpoints
 @SG_controller_bp.route('/SG_in_existance', methods=["GET"])
 def SG_in_existance():
-
     try:
         reply = sg_in_existance()
         return jsonify({"success": True, "data": reply})
-
+    
     except Exception as e:
+        print(f"Unexpected error {e}")
         return jsonify({"error": str(e)}), 500
 
 @SG_controller_bp.route('/SGR_in_existance', methods=['GET'])
@@ -30,7 +30,9 @@ def SGR_in_existance():
     try:
         reply = sgr_id()
         return jsonify({"success": True, "data": reply})
+    
     except Exception as e:
+        print(f"Unexpected error {e}")
         return jsonify({"error": str(e)}), 500
 
 @SG_controller_bp.route('/Create_SG', methods=['POST'])
@@ -42,11 +44,11 @@ def Create_SG():
         sg_desc = data.get('description')
 
         reply = create_sg(vpc_id, sg_GN, sg_desc)
-        return jsonify({"Success": True, "data" : reply})
+        return jsonify({"success": True, "data": reply})
+    
     except Exception as e:
         print(f"Unexpected error {e}")
-
-        return jsonify({"Error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
     
 @SG_controller_bp.route('/Create_ingress_rule', methods=['POST'])
 def Create_ingress_rule():
@@ -56,12 +58,13 @@ def Create_ingress_rule():
         ip_protocols = data['permissions']
 
         reply = assign_rules_ingress(group_id, ip_protocols)
-        return jsonify({"Success": True, "data" : reply})
+        return jsonify({"success": True, "data": reply})
     
     except Exception as e:
         print(f"Unexpected error {e}")
+        return jsonify({"error": str(e)}), 500
 
-        return jsonify({"Error": str(e), 'data': data}), 500
+        return jsonify({"error": str(e), 'data': data}), 500
 
 @SG_controller_bp.route('/Create_egress_rule', methods=['POST'])
 def Create_egress_rule():
@@ -70,11 +73,11 @@ def Create_egress_rule():
         group_id = data['group_id']
         ip_protocols = data['permissions']
         reply = assign_rules_egress(group_id, ip_protocols)
-        return jsonify({"Success": True, "data" : reply})
+        return jsonify({"success": True, "data": reply})
+    
     except Exception as e:
         print(f"Unexpected error {e}")
-
-        return jsonify({"Error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
     
 @SG_controller_bp.route('/Revoke_ingress_rule', methods=['POST'])
 def Revoke_ingress_rule():
@@ -84,11 +87,11 @@ def Revoke_ingress_rule():
         rule_id = data['rule_id']
         
         reply = revoke_rules_ingress(group_id, rule_id)
-        return jsonify({"Success": True, "data" : reply})
+        return jsonify({"success": True, "data": reply})
+    
     except Exception as e:
         print(f"Unexpected error {e}")
-
-        return jsonify({"Error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 @SG_controller_bp.route('/Revoke_egress_rule', methods=['POST'])
 def Revoke_egress_rule():
@@ -98,11 +101,11 @@ def Revoke_egress_rule():
         rule_id = data['rule_id']
         
         reply = revoke_rules_egress(group_id, rule_id)
-        return jsonify({"Success": True, "data" : reply})
+        return jsonify({"success": True, "data": reply})
+    
     except Exception as e:
         print(f"Unexpected error {e}")
-
-        return jsonify({"Error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 @SG_controller_bp.route('/Delete_sg', methods=['POST'])
 def Delete_SG():
@@ -110,8 +113,8 @@ def Delete_SG():
         data = request.get_json()
         group_id = data['group_id']
         reply = delete_sg(group_id)
-        return jsonify({"Success": True, "data" : reply})
+        return jsonify({"success": True, "data": reply})
+    
     except Exception as e:
         print(f"Unexpected error {e}")
-
-        return jsonify({"Error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500

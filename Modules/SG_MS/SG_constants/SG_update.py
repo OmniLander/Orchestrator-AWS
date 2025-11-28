@@ -29,15 +29,15 @@ def assign_rules_ingress(group_id, permissions):
 
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
-        return None
+        return {"success": False, "error": str(e)}
         
     except ClientError as e:
         print(f"There's been an error with the client side {e}")
-        return None
+        return {"success": False, "error": str(e)}
     
     except Exception as e:
         print(f"Unexpected error {e}")
-        return None 
+        return {"success": False, "error": str(e)}
 
 def assign_rules_egress(group_id, permissions):
     try:
@@ -54,15 +54,15 @@ def assign_rules_egress(group_id, permissions):
 
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
-        return None
+        return {"success": False, "error": str(e)}
         
     except ClientError as e:
         print(f"There's been an error with the client side {e}")
-        return None
+        return {"success": False, "error": str(e)}
     
     except Exception as e:
         print(f"Unexpected error {e}")
-        return None    
+        return {"success": False, "error": str(e)} 
     
 def revoke_rules_ingress(group_id, rule_id):
     try:
@@ -77,15 +77,15 @@ def revoke_rules_ingress(group_id, rule_id):
 
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
-        return None
+        return {"success": False, "error": str(e)}
         
     except ClientError as e:
         print(f"There's been an error with the client side {e}")
-        return None
+        return {"success": False, "error": str(e)}
     
     except Exception as e:
         print(f"Unexpected error {e}")
-        return None    
+        return {"success": False, "error": str(e)}  
     
 def revoke_rules_egress(group_id, rule_id):
     try:
@@ -100,12 +100,12 @@ def revoke_rules_egress(group_id, rule_id):
 
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
-        return None
+        return {"success": False, "error": str(e)}
         
     except ClientError as e:
         print(f"There's been an error with the client side {e}")
-        return None
+        return {"success": False, "error": str(e)}
     
     except Exception as e:
         print(f"Unexpected error {e}")
-        return None    
+        return {"success": False, "error": str(e)}  
