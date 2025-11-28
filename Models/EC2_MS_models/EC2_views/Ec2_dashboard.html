@@ -2,137 +2,269 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EC2 Dashboard</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- TU CSS usando el blueprint -->
-    <link rel="stylesheet" href="{{ url_for('EC2_controller_bp.static', filename='EC2_style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <style>
-        .dashboard-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-        }
-        .loading-spinner { display: none; }
-        .stats-card { 
-            background: white; 
-            padding: 1.5rem; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-        }
-    </style>
+    <!-- CSS propio del panel EC2 -->
+    <link rel="stylesheet"
+          href="{{ url_for('EC2_controller_bp.static', filename='ec2_dashboard.css') }}">
 </head>
-
 <body>
+    <!-- HEADER ESTILO AWS -->
+    <header class="aws-header">
+        <div class="aws-header__brand">
+            <span class="aws-header__product">Orchestrator</span>
+            <span class="aws-header__separator">|</span>
+            <span class="aws-header__service">EC2 Dashboard</span>
+        </div>
+        <div class="aws-header__meta">
+            <span class="aws-header__region">Region: custom-orchestrator</span>
+        </div>
+    </header>
 
-    <!-- HEADER -->
-    <div class="dashboard-header">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div>
-                <h1><i class="fas fa-server me-2"></i>EC2 Dashboard</h1>
-                <p class="mb-0">Gestiona tus instancias de Amazon EC2</p>
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="layout">
+        <!-- Panel superior de resumen -->
+        <section class="card card--summary">
+            <div class="card__header">
+                <h2 class="card__title">Resumen de instancias</h2>
             </div>
-            <button class="btn btn-light" onclick="refreshInstances()">
-                <i class="fas fa-sync-alt me-1"></i>Actualizar
-            </button>
-        </div>
-    </div>
-
-    <div class="container">
-
-        <!-- Stats -->
-        <div class="row mb-4">
-            <div class="col-md-3"><div class="stats-card"><h6>Total</h6><h3 id="total-instances">0</h3></div></div>
-            <div class="col-md-3"><div class="stats-card"><h6>Running</h6><h3 id="running-instances" class="text-success">0</h3></div></div>
-            <div class="col-md-3"><div class="stats-card"><h6>Stopped</h6><h3 id="stopped-instances" class="text-danger">0</h3></div></div>
-            <div class="col-md-3"><div class="stats-card"><h6>Otros</h6><h3 id="other-instances" class="text-warning">0</h3></div></div>
-        </div>
-
-        <!-- Controls -->
-        <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#createInstanceModal">
-            <i class="fas fa-plus me-1"></i>Crear Instancia
-        </button>
-
-        <!-- Table -->
-        <div class="card">
-            <div class="card-header"><h5 class="mb-0"><i class="fas fa-list me-2"></i>Instancias</h5></div>
-            <div class="card-body">
-                <div id="loadingSpinner" class="loading-spinner">
-                    <div class="spinner-border text-primary"></div>
-                    <p class="mt-2">Cargando...</p>
+            <div class="card__body card__body--summary">
+                <div class="summary-item">
+                    <span class="summary-item__label">Total instancias</span>
+                    <span class="summary-item__value" id="summary-total">0</span>
                 </div>
-                <div id="instancesContainer"></div>
+                <div class="summary-item">
+                    <span class="summary-item__label">En ejecución</span>
+                    <span class="summary-item__value summary-item__value--running" id="summary-running">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-item__label">Detenidas</span>
+                    <span class="summary-item__value summary-item__value--stopped" id="summary-stopped">0</span>
+                </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- MODALES -->
-    <!-- Create Instance -->
-    <div class="modal fade" id="createInstanceModal">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h5>Crear Instancia</h5></div>
-                <div class="modal-body">
-                    <form id="createInstanceForm">
-                        <label class="form-label">Nombre</label>
-                        <input class="form-control mb-3" name="instance_name" required>
+        <div class="layout__columns">
+            <!-- COLUMNA IZQUIERDA: TABLA DE INSTANCIAS -->
+            <section class="card card--stretch">
+                <div class="card__header card__header--with-actions">
+                    <div>
+                        <h2 class="card__title">Instancias EC2</h2>
+                        <p class="card__subtitle">Listado dinámico desde /EC2_in_existance</p>
+                    </div>
+                    <div class="card__actions">
+                        <div class="input-group">
+                            <label for="search-input" class="input-group__label">
+                                Búsqueda
+                            </label>
+                            <input id="search-input"
+                                   type="text"
+                                   class="input-group__input"
+                                   placeholder="Filtrar por ID, nombre, IP, tipo, VPC...">
+                        </div>
+                        <button type="button"
+                                id="btn-refresh"
+                                class="btn btn--secondary">
+                            Refrescar
+                        </button>
+                    </div>
+                </div>
 
-                        <label class="form-label">Image ID</label>
-                        <input class="form-control mb-3" name="image_id" value="ami-0c02fb55956c7d316" required>
+                <div class="card__body card__body--no-padding">
+                    <div class="table-wrapper">
+                        <table class="table" id="ec2-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>IP privada</th>
+                                    <th>Tipo</th>
+                                    <th>VPC</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ec2-table-body">
+                                <!-- Filas generadas vía JS -->
+                                <tr>
+                                    <td colspan="7" class="table__empty">
+                                        Cargando instancias...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-                        <label class="form-label">Tipo</label>
-                        <select class="form-select mb-3" name="instance_type">
-                            <option>t2.micro</option>
-                            <option>t2.small</option>
-                            <option>t3.micro</option>
-                            <option>t3.small</option>
-                        </select>
+            <!-- COLUMNA DERECHA: FORM CREACIÓN -->
+            <section class="card card--stretch">
+                <div class="card__header">
+                    <h2 class="card__title">Crear instancia EC2</h2>
+                    <p class="card__subtitle">
+                        Los campos son validados en frontend antes de enviarse al backend.
+                    </p>
+                </div>
+                <div class="card__body">
+                    <form id="create-ec2-form" novalidate>
+                        <!-- AMI + Instance type -->
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label for="image_id" class="form-field__label">
+                                    AMI (ImageId)
+                                </label>
+                                <select id="image_id" name="image_id" class="form-field__control" required>
+                                    <option value="">Selecciona una AMI</option>
+                                    <!-- Opciones fijas / cargadas por JS -->
+                                </select>
+                                <small class="form-field__hint">
+                                    Lista fija basada en tus AMIs de referencia.
+                                </small>
+                                <div class="form-field__error" data-error-for="image_id"></div>
+                            </div>
 
-                        <label class="form-label">Cantidad</label>
-                        <input class="form-control mb-3" type="number" name="max_count" value="1" min="1">
-                        
-                        <label class="form-label">Key Pair</label>
-                        <select class="form-select mb-3" id="keySelect" name="key_name"></select>
+                            <div class="form-field">
+                                <label for="instance_type" class="form-field__label">
+                                    Instance type
+                                </label>
+                                <select id="instance_type" name="instance_type" class="form-field__control" required>
+                                    <option value="">Selecciona un tipo</option>
+                                    <!-- Opciones fijas / cargadas por JS -->
+                                </select>
+                                <div class="form-field__error" data-error-for="instance_type"></div>
+                            </div>
+                        </div>
 
-                        <label class="form-label">Security Group</label>
-                        <select class="form-select mb-3" id="sgSelect" name="security_group_id"></select>
+                        <!-- VPC -->
+                        <div class="form-row">
+                            <div class="form-field form-field--full">
+                                <label for="vpc_id" class="form-field__label">
+                                    VPC
+                                </label>
+                                <select id="vpc_id" name="vpc_id" class="form-field__control" required>
+                                    <option value="">Selecciona una VPC</option>
+                                    <!-- Llenado desde /VPC_in_existance -->
+                                </select>
+                                <small class="form-field__hint">
+                                    Primero selecciona la VPC; luego podrás elegir Subnet y Security Group asociados.
+                                </small>
+                                <div class="form-field__error" data-error-for="vpc_id"></div>
+                            </div>
+                        </div>
 
-                        <label class="form-label">Subnet</label>
-                        <select class="form-select mb-3" id="subnetSelect" name="subnet_id"></select>
+                        <!-- Subnet -->
+                        <div class="form-row">
+                            <div class="form-field form-field--full">
+                                <label for="subnet_id" class="form-field__label">
+                                    Subnet
+                                </label>
+                                <select id="subnet_id" name="subnet_id" class="form-field__control" required disabled>
+                                    <option value="">Selecciona una Subnet</option>
+                                    <!-- Llenado dinámico según VPC -->
+                                </select>
+                                <div class="form-field__error" data-error-for="subnet_id"></div>
+                            </div>
+                        </div>
+
+                        <!-- Keys + SG -->
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label for="key_name" class="form-field__label">
+                                    KeyPair
+                                </label>
+                                <select id="key_name" name="key_name" class="form-field__control" required>
+                                    <option value="">Selecciona un KeyPair</option>
+                                    <!-- Llenado desde /get_available_keys -->
+                                </select>
+                                <div class="form-field__error" data-error-for="key_name"></div>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="security_group_id" class="form-field__label">
+                                    Security Group
+                                </label>
+                                <select id="security_group_id" name="security_group_id" class="form-field__control" required disabled>
+                                    <option value="">Selecciona un Security Group</option>
+                                    <!-- Llenado dinámico según VPC -->
+                                </select>
+                                <div class="form-field__error" data-error-for="security_group_id"></div>
+                            </div>
+                        </div>
+
+                        <!-- Count + Name -->
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label for="max_count" class="form-field__label">
+                                    Número de instancias
+                                </label>
+                                <input id="max_count"
+                                       name="max_count"
+                                       type="number"
+                                       min="1"
+                                       max="20"
+                                       class="form-field__control"
+                                       value="1"
+                                       required>
+                                <div class="form-field__error" data-error-for="max_count"></div>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="instance_name" class="form-field__label">
+                                    Nombre (Tag Name)
+                                </label>
+                                <input id="instance_name"
+                                       name="instance_name"
+                                       type="text"
+                                       class="form-field__control"
+                                       maxlength="64"
+                                       required
+                                       placeholder="web-server-01">
+                                <div class="form-field__error" data-error-for="instance_name"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn--primary">
+                                Crear instancia
+                            </button>
+                            <button type="button"
+                                    id="btn-reset-form"
+                                    class="btn btn--ghost">
+                                Limpiar formulario
+                            </button>
+                        </div>
+
+                        <div id="create-ec2-feedback" class="form-feedback" aria-live="polite"></div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button class="btn btn-primary" onclick="createInstance()">Crear</button>
-                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- OVERLAY GLOBAL DE ERROR -->
+    <div id="error-overlay" class="error-overlay error-overlay--hidden">
+        <div class="error-overlay__dialog">
+            <div class="error-overlay__header">
+                <h3 class="error-overlay__title" id="error-overlay-title">
+                    Error inesperado
+                </h3>
+            </div>
+            <div class="error-overlay__body">
+                <p id="error-overlay-message">
+                    Se ha producido un error. Revisa los detalles en consola o debajo.
+                </p>
+                <pre id="error-overlay-details" class="error-overlay__details"></pre>
+            </div>
+            <div class="error-overlay__footer">
+                <button type="button" id="error-overlay-close" class="btn btn--primary">
+                    Cerrar
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Delete -->
-    <div class="modal fade" id="deleteInstanceModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header"><h5>Eliminar Instancia</h5></div>
-                <div class="modal-body">
-                    ¿Eliminar <strong id="deleteInstanceName"></strong>?
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button class="btn btn-danger" onclick="confirmDelete()">Eliminar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('EC2_controller_bp.static', filename='EC2_dashboard.js') }}"></script>
+    <!-- JS principal no modular -->
+    <script src="{{ url_for('EC2_controller_bp.static', filename='ec2_dashboard.js') }}"></script>
 </body>
 </html>
