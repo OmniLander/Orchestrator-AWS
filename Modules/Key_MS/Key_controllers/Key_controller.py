@@ -14,17 +14,18 @@ Key_controller_bp = Blueprint("Key_controller_bp", __name__,
 def key_dashboard():
     return render_template('key_dashboard.html')
 
-
 #API endpoints
 @Key_controller_bp.route('/Keys_in_existance', methods=['GET'])
 def Keys_in_existance():
     try:
-        keys = key_in_existance()
-        return jsonify({"Success": True, "Data": keys})
+        reply = key_in_existance()
+        if isinstance(reply, dict) and "error" in reply:
+             return jsonify({"success": False, "error": reply["error"]}), 400
+        return jsonify({"success": True, "data" : reply})
     
     except Exception as e:
         print(f"Unexpected error {e}")
-        return jsonify({"Error": str(e)}), 500
+        return jsonify({"success": False, "error": str(e)}), 500
     
 @Key_controller_bp.route('/Create_key', methods=['POST'])
 def Create_key():
@@ -34,10 +35,13 @@ def Create_key():
         key_format = data.get('key_format')
         reply = create_keypair(key_name, key_format)
 
-        return jsonify({"success": True, "data": reply})
-
+        if isinstance(reply, dict) and "error" in reply:
+             return jsonify({"success": False, "error": reply["error"]}), 400
+        return jsonify({"success": True, "data" : reply})
+    
     except Exception as e:
-        print(e)   
+        print(f"Unexpected error {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @Key_controller_bp.route('/Delete_key', methods=['POST'])
 def Delete_key():
@@ -47,8 +51,10 @@ def Delete_key():
         key_name = data.get('key_name')
         reply = delete_key(key_id, key_name)
 
-        return jsonify({"success": True, "data": reply})
+        if isinstance(reply, dict) and "error" in reply:
+             return jsonify({"success": False, "error": reply["error"]}), 400
+        return jsonify({"success": True, "data" : reply})
     
     except Exception as e:
-        print(e)    
-        return jsonify({"Error": str(e)}), 500
+        print(f"Unexpected error {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
