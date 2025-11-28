@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Security Group Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('SG_controller_bp.static', filename='SG_dashboard.css') }}">
+    <script src="{{ url_for('SG_controller_bp.static', filename='SG_dashboard.js') }}"></script>
+
+</head>
+<body>
+    <!-- Overlay global de errores -->
+    <div id="error-overlay" class="error-overlay hidden">
+        <div class="error-overlay-content">
+            <h2>Se ha producido un error</h2>
+            <p id="error-overlay-message"></p>
+            <pre id="error-overlay-details"></pre>
+            <div class="error-overlay-actions">
+                <button type="button" id="error-overlay-close" class="aws-btn-secondary">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header tipo AWS -->
+    <header class="aws-header">
+        <div class="aws-header-title">Security Groups</div>
+        <div class="aws-header-subtitle">
+            Panel de administración de Security Groups (AWS EC2)
+        </div>
+    </header>
+
+    <main class="aws-main">
+        <!-- CARD PRINCIPAL: LISTADO DE SG -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <div>
+                    <h2>Security Groups</h2>
+                    <p class="aws-card-subtitle">
+                        Lista de Security Groups existentes en la cuenta/VPC.
+                    </p>
+                </div>
+                <div class="aws-card-actions">
+                    <input
+                        id="sg-search"
+                        type="search"
+                        class="aws-input"
+                        placeholder="Filtrar por GroupId, nombre, VPC o descripción"
+                    />
+                    <button id="refresh-sg-btn" type="button" class="aws-btn-secondary">
+                        Refrescar
+                    </button>
+                    <button id="focus-create-sg-btn" type="button" class="aws-btn-primary">
+                        Crear Security Group
+                    </button>
+                </div>
+            </div>
+
+            <div class="aws-card-body">
+                <div class="aws-table-wrapper">
+                    <table class="aws-table" id="sg-table">
+                        <thead>
+                            <tr>
+                                <th>Group ID</th>
+                                <th>Nombre</th>
+                                <th>VPC</th>
+                                <th>Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sg-table-body">
+                            <tr>
+                                <td colspan="4" class="aws-table-empty">
+                                    Cargando Security Groups…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="aws-table-hint">
+                    Haz clic en un Security Group para ver sus reglas y administrar.
+                </p>
+            </div>
+        </section>
+
+        <!-- GRID: DETALLES DEL SG SELECCIONADO + REGLAS -->
+        <section class="aws-grid-2col">
+            <!-- Detalle SG seleccionado -->
+            <section class="aws-card">
+                <div class="aws-card-header">
+                    <div>
+                        <h2>Resumen del Security Group</h2>
+                        <p class="aws-card-subtitle">
+                            Información del SG seleccionado y acciones principales.
+                        </p>
+                    </div>
+                    <div class="aws-card-actions">
+                        <button id="delete-sg-btn" type="button" class="aws-btn-danger" disabled>
+                            Eliminar Security Group
+                        </button>
+                    </div>
+                </div>
+                <div class="aws-card-body" id="sg-summary">
+                    <p class="aws-muted">
+                        Selecciona un Security Group en la tabla para ver detalles.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Reglas del SG -->
+            <section class="aws-card">
+                <div class="aws-card-header">
+                    <div>
+                        <h2>Reglas del Security Group</h2>
+                        <p class="aws-card-subtitle">
+                            Visualiza, filtra y elimina reglas de ingreso/egreso.
+                        </p>
+                    </div>
+                    <div class="aws-card-actions">
+                        <label class="aws-label-inline">
+                            Dirección:
+                            <select id="rules-direction-filter" class="aws-select">
+                                <option value="ingress">Ingress</option>
+                                <option value="egress">Egress</option>
+                            </select>
+                        </label>
+                        <input
+                            id="rules-search"
+                            type="search"
+                            class="aws-input"
+                            placeholder="Filtrar por RuleId, protocolo, puertos, CIDR…"
+                        />
+                    </div>
+                </div>
+                <div class="aws-card-body">
+                    <div class="aws-table-wrapper">
+                        <table class="aws-table" id="rules-table">
+                            <thead>
+                                <tr>
+                                    <th>Rule ID</th>
+                                    <th>Dirección</th>
+                                    <th>Protocolo</th>
+                                    <th>Puertos</th>
+                                    <th>CIDR / Grupo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-table-body">
+                                <tr>
+                                    <td colspan="6" class="aws-table-empty">
+                                        No hay Security Group seleccionado.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="aws-table-hint">
+                        Usa el buscador para filtrar reglas en tiempo real.
+                    </p>
+                </div>
+            </section>
+        </section>
+
+        <!-- FORMULARIO CREACIÓN SG -->
+        <section class="aws-card" id="create-sg-section">
+            <div class="aws-card-header">
+                <div>
+                    <h2>Crear nuevo Security Group</h2>
+                    <p class="aws-card-subtitle">
+                        Define el VPC, nombre y descripción del nuevo SG.
+                    </p>
+                </div>
+            </div>
+            <div class="aws-card-body">
+                <form id="create-sg-form" novalidate>
+                    <div class="aws-form-row">
+                        <label for="sg-vpc-id" class="aws-label">
+                            VPC ID
+                        </label>
+                        <input
+                            id="sg-vpc-id"
+                            name="vpc_id"
+                            type="text"
+                            class="aws-input"
+                            placeholder="vpc-xxxxxxxxxxxxxxxxx"
+                            required
+                        />
+                        <small class="field-error" data-for="sg-vpc-id"></small>
+                    </div>
+
+                    <div class="aws-form-row">
+                        <label for="sg-name" class="aws-label">
+                            Nombre del Security Group
+                        </label>
+                        <input
+                            id="sg-name"
+                            name="groupName"
+                            type="text"
+                            class="aws-input"
+                            maxlength="255"
+                            required
+                        />
+                        <small class="field-error" data-for="sg-name"></small>
+                    </div>
+
+                    <div class="aws-form-row">
+                        <label for="sg-description" class="aws-label">
+                            Descripción
+                        </label>
+                        <input
+                            id="sg-description"
+                            name="description"
+                            type="text"
+                            class="aws-input"
+                            maxlength="255"
+                            required
+                        />
+                        <small class="field-error" data-for="sg-description"></small>
+                    </div>
+
+                    <div class="aws-form-actions">
+                        <button type="submit" class="aws-btn-primary">
+                            Crear Security Group
+                        </button>
+                        <span id="create-sg-feedback" class="form-feedback"></span>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- FORMULARIO CREACIÓN REGLAS -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <div>
+                    <h2>Crear regla de Security Group</h2>
+                    <p class="aws-card-subtitle">
+                        Selecciona protocolo fijo (tcp, udp, icmp, all) y define puertos/CIDR.
+                    </p>
+                </div>
+            </div>
+            <div class="aws-card-body">
+                <form id="create-rule-form" novalidate>
+                    <div class="aws-form-row">
+                        <label for="rule-group-id" class="aws-label">
+                            Security Group ID
+                        </label>
+                        <input
+                            id="rule-group-id"
+                            name="group_id"
+                            type="text"
+                            class="aws-input"
+                            placeholder="sg-xxxxxxxxxxxxxxxxx"
+                            required
+                        />
+                        <small class="field-error" data-for="rule-group-id"></small>
+                    </div>
+
+                    <div class="aws-form-row aws-form-row-inline">
+                        <div>
+                            <label for="rule-direction" class="aws-label">
+                                Dirección
+                            </label>
+                            <select id="rule-direction" class="aws-select">
+                                <option value="ingress">Ingress</option>
+                                <option value="egress">Egress</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="rule-protocol" class="aws-label">
+                                Protocolo
+                            </label>
+                            <select id="rule-protocol" class="aws-select">
+                                <option value="tcp">tcp</option>
+                                <option value="udp">udp</option>
+                                <option value="icmp">icmp</option>
+                                <option value="all">all</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="aws-form-row aws-form-row-inline">
+                        <div>
+                            <label for="rule-from-port" class="aws-label">
+                                From port
+                            </label>
+                            <input
+                                id="rule-from-port"
+                                type="number"
+                                class="aws-input"
+                                min="0"
+                                max="65535"
+                            />
+                            <small class="field-error" data-for="rule-from-port"></small>
+                        </div>
+                        <div>
+                            <label for="rule-to-port" class="aws-label">
+                                To port
+                            </label>
+                            <input
+                                id="rule-to-port"
+                                type="number"
+                                class="aws-input"
+                                min="0"
+                                max="65535"
+                            />
+                            <small class="field-error" data-for="rule-to-port"></small>
+                        </div>
+                    </div>
+
+                    <div class="aws-form-row">
+                        <label for="rule-cidr" class="aws-label">
+                            CIDR IPv4
+                        </label>
+                        <input
+                            id="rule-cidr"
+                            type="text"
+                            class="aws-input"
+                            placeholder="0.0.0.0/0"
+                            required
+                        />
+                        <small class="field-error" data-for="rule-cidr"></small>
+                    </div>
+
+                    <div class="aws-form-row">
+                        <label for="rule-description" class="aws-label">
+                            Descripción
+                        </label>
+                        <input
+                            id="rule-description"
+                            type="text"
+                            class="aws-input"
+                            maxlength="255"
+                        />
+                    </div>
+
+                    <div class="aws-form-actions">
+                        <button type="submit" class="aws-btn-primary">
+                            Crear regla
+                        </button>
+                        <span id="create-rule-feedback" class="form-feedback"></span>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>
