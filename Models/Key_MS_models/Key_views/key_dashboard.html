@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Pair Dashboard</title>
+        <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Tu CSS desde el Blueprint -->
+    <link rel="stylesheet" href="{{ url_for('Key_controller_bp.static', filename='Key_dashboard.css') }}">
+
+<body class="aws-console">
+
+    <!-- Overlay de error global -->
+    <div id="global-error-overlay" class="aws-error-overlay" aria-hidden="true">
+        <div class="aws-error-dialog" role="alertdialog" aria-modal="true">
+            <div class="aws-error-header">
+                <h2>Error</h2>
+                <button type="button" id="error-overlay-close" class="aws-btn aws-btn--ghost-sm">
+                    Cerrar
+                </button>
+            </div>
+            <div class="aws-error-body">
+                <p id="error-overlay-message" class="aws-error-message"></p>
+                <pre id="error-overlay-details" class="aws-error-details"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de estado global -->
+    <div id="global-toast" class="aws-toast" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Header tipo AWS -->
+    <header class="aws-header">
+        <div class="aws-header__brand">
+            <span class="aws-header__logo">AWS</span>
+            <span class="aws-header__service-name">Key Pairs Console</span>
+        </div>
+        <div class="aws-header__meta">
+            <span class="aws-header__region">Region: <strong>us-east-1</strong></span>
+        </div>
+    </header>
+
+    <!-- Breadcrumb / título -->
+    <nav class="aws-breadcrumb">
+        <ol>
+            <li>EC2</li>
+            <li>Network & Security</li>
+            <li class="is-active">Key Pairs</li>
+        </ol>
+    </nav>
+
+    <main class="aws-main">
+        <!-- Card principal: tabla de Keys -->
+        <section class="aws-card aws-card--primary">
+            <header class="aws-card__header">
+                <div>
+                    <h1 class="aws-card__title">Key pairs</h1>
+                    <p class="aws-card__subtitle">
+                        Administra la creación, búsqueda y eliminación de AWS Key Pairs.
+                    </p>
+                </div>
+                <div class="aws-card__actions">
+                    <button id="btn-refresh" type="button" class="aws-btn aws-btn--ghost">
+                        Refresh
+                    </button>
+                    <button id="btn-open-create" type="button" class="aws-btn aws-btn--primary">
+                        Create key pair
+                    </button>
+                </div>
+            </header>
+
+            <div class="aws-card__toolbar">
+                <div class="aws-toolbar-group">
+                    <button id="btn-delete-selected" type="button" class="aws-btn aws-btn--danger" disabled>
+                        Delete selected
+                    </button>
+                </div>
+                <div class="aws-toolbar-group aws-toolbar-group--right">
+                    <label class="aws-input-label" for="key-search">
+                        Search
+                    </label>
+                    <input
+                        id="key-search"
+                        type="text"
+                        class="aws-input aws-input--search"
+                        placeholder="Search by name, id or type..."
+                        autocomplete="off">
+                </div>
+            </div>
+
+            <div class="aws-table-wrapper">
+                <table class="aws-table" aria-label="Key pairs table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" id="select-all-keys">
+                            </th>
+                            <th>Key name</th>
+                            <th>Key ID</th>
+                            <th>Key type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="keys-table-body">
+                        <tr class="aws-table__loading-row">
+                            <td colspan="4">Loading key pairs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Card: formulario de creación -->
+        <section class="aws-card aws-card--secondary" id="create-card">
+            <header class="aws-card__header aws-card__header--compact">
+                <h2 class="aws-card__title">Create key pair</h2>
+            </header>
+            <div class="aws-card__body">
+                <form id="create-key-form" novalidate>
+                    <div class="aws-form-grid">
+                        <div class="aws-form-field">
+                            <label for="key-name" class="aws-input-label">
+                                Key name <span class="aws-required">*</span>
+                            </label>
+                            <input
+                                id="key-name"
+                                name="key_name"
+                                type="text"
+                                class="aws-input"
+                                maxlength="255"
+                                autocomplete="off"
+                                required
+                                placeholder="my-keypair-prod">
+                            <p class="aws-field-hint">
+                                Solo letras, números, guiones, guiones bajos y puntos.
+                            </p>
+                            <p class="aws-form-error" id="key-name-error"></p>
+                        </div>
+
+                        <div class="aws-form-field">
+                            <label for="key-format" class="aws-input-label">
+                                Key format <span class="aws-required">*</span>
+                            </label>
+                            <select
+                                id="key-format"
+                                name="key_format"
+                                class="aws-select"
+                                required>
+                                <option value="" disabled selected>Select format</option>
+                                <option value="RSA">RSA</option>
+                                <option value="PEM">PEM</option>
+                            </select>
+                            <p class="aws-field-hint">
+                                Select a fixed format: RSA or PEM.
+                            </p>
+                            <p class="aws-form-error" id="key-format-error"></p>
+                        </div>
+                    </div>
+
+                    <div class="aws-form-actions">
+                        <button
+                            id="btn-submit-create"
+                            type="submit"
+                            class="aws-btn aws-btn--primary">
+                            Create key pair
+                        </button>
+                        <button
+                            id="btn-reset-create"
+                            type="button"
+                            class="aws-btn aws-btn--ghost">
+                            Clear
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Card: eliminación (por select) -->
+        <section class="aws-card aws-card--secondary">
+            <header class="aws-card__header aws-card__header--compact">
+                <h2 class="aws-card__title">Delete key pair</h2>
+            </header>
+            <div class="aws-card__body">
+                <form id="delete-key-form" novalidate>
+                    <div class="aws-form-grid">
+                        <div class="aws-form-field">
+                            <label for="delete-key-select" class="aws-input-label">
+                                Key pair to delete <span class="aws-required">*</span>
+                            </label>
+                            <select
+                                id="delete-key-select"
+                                name="delete_key"
+                                class="aws-select"
+                                required>
+                                <option value="" disabled selected>
+                                    Select a key pair...
+                                </option>
+                            </select>
+                            <p class="aws-field-hint">
+                                Esta lista se llena dinámicamente desde el backend.
+                            </p>
+                            <p class="aws-form-error" id="delete-key-error"></p>
+                        </div>
+                    </div>
+                    <div class="aws-form-actions">
+                        <button
+                            id="btn-submit-delete"
+                            type="submit"
+                            class="aws-btn aws-btn--danger">
+                            Delete key pair
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('Key_controller_bp.static', filename='key_dashboard.js') }}" defer></script>
+</body>
+</html>
