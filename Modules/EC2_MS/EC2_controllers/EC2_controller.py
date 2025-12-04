@@ -39,7 +39,8 @@ def Create_EC2():
         security_group_id = data.get('security_group_id')
         subnet_id = data.get('subnet_id')
         instance_name = data.get('instance_name')
-        reply = create_ec2(image_id, instance_type, max_count, key_name, security_group_id, subnet_id, instance_name)
+        user_data = data.get('user_data', None)
+        reply = create_ec2(image_id, instance_type, max_count, key_name, security_group_id, subnet_id, instance_name, user_data)
         if isinstance(reply, dict) and "error" in reply:
              return jsonify({"success": False, "error": reply["error"]}), 400
         return jsonify({"success": True, "data" : reply})

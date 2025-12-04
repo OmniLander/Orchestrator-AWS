@@ -15,6 +15,8 @@ def ec2_in_existance():
                 ec2_Ip = instance.get('PrivateIpAddress', 'N/A')
                 ec2_type = instance['InstanceType']
                 ec2_vpc = instance.get('VpcId', 'N/A')
+                ec2_subn = instance.get('SubnetId', 'N/A')
+                ec2_pubip = instance.get('PublicIpAddress', 'N/A')
                 
                 #Get name from Tags
                 ec2_name = "No name"
@@ -24,13 +26,15 @@ def ec2_in_existance():
                             ec2_name = tag['Value']
                             break
 
-            ec2[ec2_id] = {
-                'Instance_name': ec2_name, 
-                'State': ec2_state,
-                'Ip_address': ec2_Ip,
-                'Instance_type': ec2_type,
-                'VPC' : ec2_vpc
-            }
+                ec2[ec2_id] = {
+                    'Instance_name': ec2_name, 
+                    'State': ec2_state,
+                    'Ip_address': ec2_Ip,
+                    'Instance_type': ec2_type,
+                    'Subnet': ec2_subn,
+                    'VPC' : ec2_vpc,
+                    'Public_IpAdd' : ec2_pubip
+                }
 
         return ec2
 
@@ -45,3 +49,4 @@ def ec2_in_existance():
     except Exception as e:
         print(f"Unexpected error {e}")
         return {"success": False, "error": str(e)}
+    

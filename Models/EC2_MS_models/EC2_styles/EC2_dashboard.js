@@ -1,13 +1,5 @@
 /****************************************************************************************
- * EC2 DASHBOARD – JS FINAL COMPLETO (AWS-STYLE)
- * Incluye:
- *  - KeyName FIX (se envía info.Key_name y no el KeyPairId)
- *  - Filtro por VPC → carga SGs y Subnets dependientes
- *  - Error Overlay global
- *  - Creación y eliminación de EC2
- *  - Búsqueda instantánea
- *  - Validación completa
- *  - Configuración AWS Console-like
+ * EC2 DASHBOARD – JS FINAL (ADAPTADO PARA USER DATA Y CYBER-THEME)
  ****************************************************************************************/
 
 // ======================================================================================
@@ -46,20 +38,22 @@ let SELECTED_VPC = "";
 
 function showErrorOverlay(title, message, details = "") {
     const overlay = document.getElementById("error-overlay");
-    const titleEl = document.getElementById("error-overlay-title");
     const msgEl = document.getElementById("error-overlay-message");
     const detEl = document.getElementById("error-overlay-details");
 
-    titleEl.textContent = title;
-    msgEl.textContent = message;
-    detEl.textContent = details;
-
+    // Actualizamos textos
+    if(msgEl) msgEl.textContent = message;
+    if(detEl) detEl.textContent = details;
+    
+    // Mostrar overlay (compatible con style.display y clases)
+    overlay.style.display = "flex";
     overlay.classList.remove("error-overlay--hidden");
 }
 
 function hideErrorOverlay() {
-    document.getElementById("error-overlay")
-        .classList.add("error-overlay--hidden");
+    const overlay = document.getElementById("error-overlay");
+    overlay.style.display = "none";
+    overlay.classList.add("error-overlay--hidden");
 }
 
 // ======================================================================================
@@ -118,49 +112,57 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======================================================================================
 
 function setupEventListeners() {
-    document.getElementById("btn-refresh").addEventListener("click", refreshInstances);
-    document.getElementById("search-input").addEventListener("input", () => {
-        CURRENT_SEARCH = document.getElementById("search-input").value.toLowerCase();
+    const btnRefresh = document.getElementById("btn-refresh");
+    if(btnRefresh) btnRefresh.addEventListener("click", refreshInstances);
+
+    const searchInput = document.getElementById("search-input");
+    if(searchInput) searchInput.addEventListener("input", () => {
+        CURRENT_SEARCH = searchInput.value.toLowerCase();
         applySearchFilter();
     });
 
-    document.getElementById("create-ec2-form").addEventListener("submit", (e) => {
+    const createForm = document.getElementById("create-ec2-form");
+    if(createForm) createForm.addEventListener("submit", (e) => {
         e.preventDefault();
         handleCreateInstance();
     });
 
-    document.getElementById("btn-reset-form").addEventListener("click", () => {
-        document.getElementById("create-ec2-form").reset();
+    const btnReset = document.getElementById("btn-reset-form");
+    if(btnReset) btnReset.addEventListener("click", () => {
+        createForm.reset();
         resetNetworkSelectors();
         clearFormErrors();
         setCreateFeedback("");
     });
 
-    document.getElementById("error-overlay-close").addEventListener("click", hideErrorOverlay);
+    const closeOverlayBtn = document.getElementById("error-overlay-close");
+    if(closeOverlayBtn) closeOverlayBtn.addEventListener("click", hideErrorOverlay);
 
-    document.getElementById("vpc_id").addEventListener("change", onVpcChange);
+    const vpcSelect = document.getElementById("vpc_id");
+    if(vpcSelect) vpcSelect.addEventListener("change", onVpcChange);
 
-document.addEventListener("click", (e) => {
+    document.addEventListener("click", (e) => {
+        // DELETE
+        if (e.target.matches(".btn-delete-instance") || e.target.closest(".btn-delete-instance")) {
+            const btn = e.target.matches(".btn-delete-instance") ? e.target : e.target.closest(".btn-delete-instance");
+            const id = btn.getAttribute("data-instance-id");
+            handleDeleteInstance(id);
+        }
 
-    // DELETE
-    if (e.target.matches(".btn-delete-instance")) {
-        const id = e.target.getAttribute("data-instance-id");
-        handleDeleteInstance(id);
-    }
+        // START
+        if (e.target.matches(".btn-start-instance") || e.target.closest(".btn-start-instance")) {
+            const btn = e.target.matches(".btn-start-instance") ? e.target : e.target.closest(".btn-start-instance");
+            const id = btn.getAttribute("data-instance-id");
+            handleStartInstance(id);
+        }
 
-    // START
-    if (e.target.matches(".btn-start-instance")) {
-        const id = e.target.getAttribute("data-instance-id");
-        handleStartInstance(id);
-    }
-
-    // STOP
-    if (e.target.matches(".btn-stop-instance")) {
-        const id = e.target.getAttribute("data-instance-id");
-        handleStopInstance(id);
-    }
-});
-
+        // STOP
+        if (e.target.matches(".btn-stop-instance") || e.target.closest(".btn-stop-instance")) {
+            const btn = e.target.matches(".btn-stop-instance") ? e.target : e.target.closest(".btn-stop-instance");
+            const id = btn.getAttribute("data-instance-id");
+            handleStopInstance(id);
+        }
+    });
 }
 
 // ======================================================================================
@@ -169,20 +171,24 @@ document.addEventListener("click", (e) => {
 
 function populateStaticSelects() {
     const amiSel = document.getElementById("image_id");
-    AMI_OPTIONS.forEach(a => {
-        const opt = document.createElement("option");
-        opt.value = a.value;
-        opt.textContent = `${a.label} (${a.value})`;
-        amiSel.appendChild(opt);
-    });
+    if(amiSel) {
+        AMI_OPTIONS.forEach(a => {
+            const opt = document.createElement("option");
+            opt.value = a.value;
+            opt.textContent = `${a.label}`;
+            amiSel.appendChild(opt);
+        });
+    }
 
     const typeSel = document.getElementById("instance_type");
-    INSTANCE_TYPE_OPTIONS.forEach(t => {
-        const opt = document.createElement("option");
-        opt.value = t;
-        opt.textContent = t;
-        typeSel.appendChild(opt);
-    });
+    if(typeSel) {
+        INSTANCE_TYPE_OPTIONS.forEach(t => {
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.textContent = t;
+            typeSel.appendChild(opt);
+        });
+    }
 }
 
 // ======================================================================================
@@ -216,35 +222,32 @@ async function loadExternalResources() {
 
 function populateVpcs(data) {
     const sel = document.getElementById("vpc_id");
-    sel.innerHTML = '<option value="">Selecciona una VPC</option>';
+    if(!sel) return;
+    sel.innerHTML = '<option value="">-- Select Network --</option>';
 
     Object.entries(data).forEach(([vpcId, info]) => {
         const opt = document.createElement("option");
         opt.value = vpcId;
-
         const name = info.name || "No name";
         const cidr = info.cidr_block || "";
         opt.textContent = `${name} (${vpcId}) | ${cidr}`;
-
         sel.appendChild(opt);
     });
 }
 
 // ======================================================================================
-// KEYS (AQUÍ ESTÁ EL FIX CRÍTICO: usar Key_name como VALUE)
+// KEYS
 // ======================================================================================
 
 function populateKeys(data) {
     const sel = document.getElementById("key_name");
-    sel.innerHTML = '<option value="">Selecciona un KeyPair</option>';
+    if(!sel) return;
+    sel.innerHTML = '<option value="">-- Select Keypair --</option>';
 
     Object.entries(data).forEach(([keyId, info]) => {
         const opt = document.createElement("option");
-
-        // FIX: AWS requiere KeyName, NO KeyPairId
-        opt.value = info.Key_name;
-
-        opt.textContent = `${info.Key_name} (${keyId})`;
+        opt.value = info.Key_name; // AWS requiere el nombre
+        opt.textContent = `${info.Key_name}`;
         sel.appendChild(opt);
     });
 }
@@ -263,7 +266,7 @@ function onVpcChange() {
 
 function populateSGsForVpc(vpcId) {
     const sel = document.getElementById("security_group_id");
-    sel.innerHTML = '<option value="">Selecciona un Security Group</option>';
+    sel.innerHTML = '<option value="">-- Select Security Group --</option>';
     sel.disabled = true;
 
     if (!vpcId) return;
@@ -287,18 +290,33 @@ function populateSGsForVpc(vpcId) {
 
 function populateSubnetsForVpc(vpcId) {
     const sel = document.getElementById("subnet_id");
-    sel.innerHTML = '<option value="">Selecciona una Subnet</option>';
+    
+    // Resetear el select
+    sel.innerHTML = '<option value="">-- Select Subnet --</option>';
     sel.disabled = true;
 
     if (!vpcId) return;
 
+    // Obtener la lista de subnets para esa VPC
     const list = ALL_SUBNETS[vpcId] || [];
+
     list.forEach((sub) => {
         const opt = document.createElement("option");
-        opt.value = sub.subnet_id;
+        opt.value = sub.subnet_id; // El valor que se envía a Python sigue siendo el ID
 
-        opt.textContent =
-            `${sub.name} | ${sub.subnet_id} | ${sub.zone || ""} | ${sub.block || ""}`;
+        // LÓGICA DE VISUALIZACIÓN:
+        // 1. Extraemos el nombre real
+        let displayName = sub.name;
+
+        // 2. Si el nombre está vacío o es "No name", usamos el ID para que sea útil
+        if (!displayName || displayName === "No name") {
+            displayName = sub.subnet_id;
+        }
+
+        // 3. Formato Final: "Nombre (IP) | AZ"
+        // Ejemplo: "proyecto-subnet-public2 (10.0.16.0/20) | us-east-1b"
+        // Usamos 'sub.availability_zone' porque así viene en tu JSON
+        opt.textContent = `${displayName} (${sub.cidr_block}) | ${sub.availability_zone}`;
 
         sel.appendChild(opt);
     });
@@ -308,13 +326,14 @@ function populateSubnetsForVpc(vpcId) {
 
 function resetNetworkSelectors() {
     document.getElementById("vpc_id").value = "";
-    document.getElementById("security_group_id").innerHTML =
-        '<option value="">Selecciona un Security Group</option>';
-    document.getElementById("security_group_id").disabled = true;
+    
+    const sgSel = document.getElementById("security_group_id");
+    sgSel.innerHTML = '<option value="">-- Waiting for VPC --</option>';
+    sgSel.disabled = true;
 
-    document.getElementById("subnet_id").innerHTML =
-        '<option value="">Selecciona una Subnet</option>';
-    document.getElementById("subnet_id").disabled = true;
+    const subSel = document.getElementById("subnet_id");
+    subSel.innerHTML = '<option value="">-- Waiting for VPC --</option>';
+    subSel.disabled = true;
 
     SELECTED_VPC = "";
 }
@@ -325,18 +344,27 @@ function resetNetworkSelectors() {
 
 async function refreshInstances() {
     const tbody = document.getElementById("ec2-table-body");
-    tbody.innerHTML = `
-        <tr><td colspan="7" class="table__loading">Cargando instancias...</td></tr>
-    `;
+    if (!tbody.children.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 2rem;">SYNCING DATALINK...</td></tr>`;
+    }
 
     try {
         const resp = await fetchJSON("/EC2_in_existance");
-        CURRENT_INSTANCES = resp.data || {};
-
+        
+        if (resp.data) {
+            CURRENT_INSTANCES = resp.data;
+        } else if (resp && typeof resp === 'object' && !resp.error && !resp.success) {
+            CURRENT_INSTANCES = resp;
+        } else {
+            CURRENT_INSTANCES = {};
+        }
+        
         renderInstancesTable();
-        updateSummary();
+        updateSummary(); 
+
     } catch (e) {
-        console.error("Error refrescando EC2:", e);
+        console.error("Error crítico refrescando EC2:", e);
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--accent-danger);">CONNECTION ERROR</td></tr>`;
     }
 }
 
@@ -346,49 +374,59 @@ function renderInstancesTable() {
 
     const ids = Object.keys(CURRENT_INSTANCES);
     if (ids.length === 0) {
-        tbody.innerHTML =
-            `<tr><td colspan="7" class="table__empty">No se encontraron instancias.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 2rem;">NO ACTIVE ASSETS FOUND</td></tr>`;
         return;
     }
 
     ids.forEach((id) => {
         const inst = CURRENT_INSTANCES[id];
-        const name = inst.Instance_name || "No name";
-        const state = inst.State || "-";
-        const ip = inst.Ip_address || "N/A";
+        const name = inst.Instance_name || "-";
+        
+        // Manejo robusto del estado
+        let rawState = inst.State || inst.state;
+        if (typeof rawState === 'object' && rawState.Name) rawState = rawState.Name;
+        const state = String(rawState || 'unknown').toLowerCase();
+        
+        const privateIp = inst.Ip_address || "-";
+        const publicIp = inst.Public_IpAdd || "-";
         const type = inst.Instance_type || "-";
         const vpc = inst.VPC || "-";
+        const subnet = inst.Subnet || "-";
+
+        const isRunning = state === "running";
+
+        // Clases de estado para el color del texto
+        let stateClass = "";
+        if(state === "running") stateClass = "status-running";
+        else if(state === "stopped") stateClass = "status-stopped";
+        else stateClass = "status-pending";
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td class="table__cell--mono">${id}</td>
-            <td>${name}</td>
-            <td><span class="badge badge--state-${state.toLowerCase()}">${state}</span></td>
-            <td>${ip}</td>
+            <td style="font-family: monospace; color: var(--accent-primary-start);">${id}</td>
+            <td style="font-weight: 500;">${name}</td>
+            <td class="${stateClass}" style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">${state}</td>
+            <td style="font-family: monospace;">${privateIp}</td>
+            <td style="font-family: monospace;">${publicIp}</td>
             <td>${type}</td>
             <td>${vpc}</td>
-<td class="table__actions">
-
-    ${state.toLowerCase() === "running"
-        ? `
-            <button class="btn btn--warning btn-stop-instance" data-instance-id="${id}">
-                Stop
-            </button>
-        `
-        : `
-            <button class="btn btn--primary btn-start-instance" data-instance-id="${id}">
-                Start
-            </button>
-        `
-    }
-
-    <button class="btn btn--danger btn-delete-instance" data-instance-id="${id}">
-        Terminar
-    </button>
-
-</td>
-
+            <td>${subnet}</td>
+            <td style="display: flex; gap: 0.5rem;">
+                ${isRunning ? `
+                    <button class="btn btn-danger btn-stop-instance" data-instance-id="${id}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                        STOP
+                    </button>
+                ` : `
+                    <button class="btn btn-primary btn-start-instance" data-instance-id="${id}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                        START
+                    </button>
+                `}
+                <button class="btn btn-secondary btn-delete-instance" data-instance-id="${id}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                    TERM
+                </button>
+            </td>
         `;
+
         tbody.appendChild(tr);
     });
 
@@ -396,59 +434,76 @@ function renderInstancesTable() {
 }
 
 function applySearchFilter() {
-    const filter = CURRENT_SEARCH;
+    const filterText = CURRENT_SEARCH;
     const rows = document.querySelectorAll("#ec2-table-body tr");
 
     rows.forEach(r => {
-        if (filter === "") { r.style.display = ""; return; }
-        r.style.display = r.textContent.toLowerCase().includes(filter) ? "" : "none";
+        const rowText = r.textContent.toLowerCase();
+        const matchesText = !filterText || rowText.includes(filterText);
+        r.style.display = matchesText ? "" : "none";
     });
 }
 
 function updateSummary() {
     const ids = Object.keys(CURRENT_INSTANCES);
-    const running = ids.filter(id =>
-        (CURRENT_INSTANCES[id].State || "").toLowerCase() === "running"
-    ).length;
+    let running = 0;
+    let stopped = 0;
+    
+    ids.forEach(id => {
+        const inst = CURRENT_INSTANCES[id];
+        let rawState = inst.State || inst.state;
+        if (typeof rawState === 'object' && rawState !== null && rawState.Name) rawState = rawState.Name;
+        const state = String(rawState || '').toLowerCase().trim();
+        
+        if (state === 'running') running++;
+        else if (state === 'stopped') stopped++;
+    });
+    
+    const totalEl = document.getElementById("summary-total");
+    const runEl = document.getElementById("summary-running");
+    const stopEl = document.getElementById("summary-stopped");
 
-    const stopped = ids.filter(id =>
-        ["stopped", "stopping"].includes(
-            (CURRENT_INSTANCES[id].State || "").toLowerCase()
-        )
-    ).length;
-
-    document.getElementById("summary-total").textContent = ids.length;
-    document.getElementById("summary-running").textContent = running;
-    document.getElementById("summary-stopped").textContent = stopped;
+    if (totalEl) totalEl.textContent = ids.length;
+    if (runEl) runEl.textContent = running;
+    if (stopEl) stopEl.textContent = stopped;
 }
 
 // ======================================================================================
-// VALIDACIONES DEL FORM Y CREACIÓN DE EC2
+// VALIDACIONES Y CREACIÓN (CON USER DATA)
 // ======================================================================================
 
 function clearFormErrors() {
     document.querySelectorAll(".form-field__error").forEach(e => e.textContent = "");
-    document.querySelectorAll(".form-field__control").forEach(c =>
+    // Limpia la clase de error de cualquier input que la tenga
+    document.querySelectorAll(".form-field__control--invalid").forEach(c =>
         c.classList.remove("form-field__control--invalid")
     );
 }
 
 function clearFieldError(id) {
-    document.getElementById(id).classList.remove("form-field__control--invalid");
+    const el = document.getElementById(id);
+    if(el) el.classList.remove("form-field__control--invalid");
+    
     const err = document.querySelector(`[data-error-for="${id}"]`);
     if (err) err.textContent = "";
 }
 
 function setFieldError(id, msg) {
-    document.getElementById(id).classList.add("form-field__control--invalid");
+    const el = document.getElementById(id);
+    if(el) el.classList.add("form-field__control--invalid");
+    
     const err = document.querySelector(`[data-error-for="${id}"]`);
     if (err) err.textContent = msg;
 }
 
 function setCreateFeedback(msg, type = "info") {
     const div = document.getElementById("create-ec2-feedback");
+    if(!div) return;
     div.textContent = msg;
-    div.className = `form-feedback form-feedback--${type}`;
+    // Ajustar colores según el tema
+    if(type === 'error') div.style.color = 'var(--accent-danger)';
+    else if(type === 'success') div.style.color = 'var(--accent-success)';
+    else div.style.color = 'var(--text-muted)';
 }
 
 function validateCreateForm() {
@@ -462,25 +517,28 @@ function validateCreateForm() {
     const type = document.getElementById("instance_type").value.trim();
     const max = document.getElementById("max_count").value.trim();
     const instName = document.getElementById("instance_name").value.trim();
+    
+    // CAPTURA DEL NUEVO CAMPO USER DATA
+    const userData = document.getElementById("user_data").value; 
 
     let ok = true;
 
-    if (!image) { setFieldError("image_id", "Selecciona AMI"); ok = false; }
-    if (!type) { setFieldError("instance_type", "Selecciona tipo"); ok = false; }
-    if (!vpc) { setFieldError("vpc_id", "Selecciona VPC"); ok = false; }
-    if (!subnet) { setFieldError("subnet_id", "Selecciona Subnet"); ok = false; }
-    if (!sg) { setFieldError("security_group_id", "Selecciona Security Group"); ok = false; }
-    if (!keyName) { setFieldError("key_name", "Selecciona KeyPair"); ok = false; }
-    if (!instName) { setFieldError("instance_name", "Indica nombre"); ok = false; }
+    if (!image) { setFieldError("image_id", "Required"); ok = false; }
+    if (!type) { setFieldError("instance_type", "Required"); ok = false; }
+    if (!vpc) { setFieldError("vpc_id", "Required"); ok = false; }
+    if (!subnet) { setFieldError("subnet_id", "Required"); ok = false; }
+    if (!sg) { setFieldError("security_group_id", "Required"); ok = false; }
+    if (!keyName) { setFieldError("key_name", "Required"); ok = false; }
+    if (!instName) { setFieldError("instance_name", "Required"); ok = false; }
 
     const n = parseInt(max, 10);
     if (!Number.isInteger(n) || n < 1 || n > 20) {
-        setFieldError("max_count", "Debe ser número entre 1 y 20");
+        setFieldError("max_count", "1 - 20");
         ok = false;
     }
 
     if (!ok) {
-        setCreateFeedback("Corrige los errores antes de continuar.", "error");
+        setCreateFeedback("Please correct fields marked in red.", "error");
         return null;
     }
 
@@ -488,11 +546,12 @@ function validateCreateForm() {
         image_id: image,
         instance_type: type,
         max_count: n,
-        key_name: keyName,      // ← FIX: ahora sí es KeyName válido
+        key_name: keyName,
         security_group_id: sg,
         subnet_id: subnet,
         instance_name: instName,
-        vpc_id: vpc
+        vpc_id: vpc,
+        user_data: userData // SE AÑADE AL PAYLOAD
     };
 }
 
@@ -500,7 +559,7 @@ async function handleCreateInstance() {
     const payload = validateCreateForm();
     if (!payload) return;
 
-    setCreateFeedback("Creando instancia...", "info");
+    setCreateFeedback("Initiating Launch Sequence...", "info");
 
     try {
         await fetchJSON("/Create_EC2", {
@@ -508,63 +567,45 @@ async function handleCreateInstance() {
             body: JSON.stringify(payload)
         });
 
-        setCreateFeedback("Instancia creada exitosamente.", "success");
+        setCreateFeedback("Resource Deployed Successfully.", "success");
         refreshInstances();
         document.getElementById("create-ec2-form").reset();
         resetNetworkSelectors();
 
     } catch (e) {
         console.error("Error creando EC2:", e);
-        setCreateFeedback("Error creando instancia. Revisa el overlay.", "error");
+        setCreateFeedback("Deployment Failed. Check logs.", "error");
     }
 }
 
 // ======================================================================================
-// ELIMINAR INSTANCIA
+// ELIMINAR / START / STOP
 // ======================================================================================
 
 async function handleDeleteInstance(id) {
-    if (!confirm(`¿Terminar la instancia ${id}?`)) return;
-
+    if (!confirm(`CONFIRM TERMINATION: ${id}?`)) return;
     try {
-        await fetchJSON("/Delete_ec2", {
-            method: "POST",
-            body: JSON.stringify({ ec2_id: id })
-        });
-
+        await fetchJSON("/Delete_ec2", { method: "POST", body: JSON.stringify({ ec2_id: id }) });
         refreshInstances();
-
     } catch (e) {
-        console.error("Error eliminando EC2:", e);
+        showErrorOverlay("Error", "Termination failed", e.toString());
     }
 }
 
-// ======================================================================================
-// START / STOP INSTANCE (AWS STYLE)
-// ======================================================================================
-
 async function handleStartInstance(id) {
     try {
-        await fetchJSON("/Start_ec2", {
-            method: "POST",
-            body: JSON.stringify({ instance_id: id })
-        });
-
+        await fetchJSON("/Start_ec2", { method: "POST", body: JSON.stringify({ instance_id: id }) });
         refreshInstances();
     } catch (e) {
-        console.error("Error starting EC2:", e);
+        showErrorOverlay("Error", "Start failed", e.toString());
     }
 }
 
 async function handleStopInstance(id) {
     try {
-        await fetchJSON("/Stop_ec2", {
-            method: "POST",
-            body: JSON.stringify({ instance_id: id })
-        });
-
+        await fetchJSON("/Stop_ec2", { method: "POST", body: JSON.stringify({ instance_id: id }) });
         refreshInstances();
     } catch (e) {
-        console.error("Error stopping EC2:", e);
+        showErrorOverlay("Error", "Stop failed", e.toString());
     }
 }

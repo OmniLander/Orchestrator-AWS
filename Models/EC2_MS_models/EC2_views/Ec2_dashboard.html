@@ -1,270 +1,270 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>EC2 Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Orchestrator | EC2 Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- CSS propio del panel EC2 -->
-    <link rel="stylesheet"
-          href="{{ url_for('EC2_controller_bp.static', filename='ec2_dashboard.css') }}">
-</head>
-<body>
-    <!-- HEADER ESTILO AWS -->
-    <header class="aws-header">
-        <div class="aws-header__brand">
-            <span class="aws-header__product">Orchestrator</span>
-            <span class="aws-header__separator">|</span>
-            <span class="aws-header__service">EC2 Dashboard</span>
-        </div>
-        <div class="aws-header__meta">
-            <span class="aws-header__region">Region: custom-orchestrator</span>
-        </div>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('EC2_controller_bp.static', filename='theme.css') }}"
+    />
+
+    <style>
+      /* Layout de 2 columnas para escritorio */
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      
+      @media (min-width: 1024px) {
+        .dashboard-grid {
+          grid-template-columns: 2fr 1fr; /* Tabla ancha, Formulario estrecho */
+          align-items: start;
+        }
+      }
+
+      /* Ajuste para el resumen de estadísticas */
+      .summary-grid {
+        display: flex;
+        gap: 3rem;
+        justify-content: space-around;
+        text-align: center;
+      }
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        text-shadow: 0 0 10px rgba(255,255,255,0.3);
+      }
+      
+      .stat-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+      }
+
+      /* Colores específicos para los estados en el resumen */
+      .text-neon-green { color: var(--accent-success); text-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+      .text-neon-red { color: var(--accent-danger); text-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+    </style>
+  </head>
+  <body>
+    
+    <header class="app-header">
+      <div>
+        <h1>Orchestrator</h1>
+        <span class="app-header-subtitle">EC2 Command Center</span>
+      </div>
+      <div style="font-family: monospace; color: var(--accent-primary-start);">
+        Region: custom-orchestrator
+      </div>
     </header>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="layout">
-        <!-- Panel superior de resumen -->
-        <section class="card card--summary">
-            <div class="card__header">
-                <h2 class="card__title">Resumen de instancias</h2>
+    <main class="app-main">
+      
+      <section class="card">
+        <div class="card-header">
+          <h3>Telemetry Overview</h3>
+        </div>
+        <div class="card-body">
+          <div class="summary-grid">
+            <div class="stat-item">
+              <span class="stat-value" id="summary-total">0</span>
+              <span class="stat-label">Total Assets</span>
             </div>
-            <div class="card__body card__body--summary">
-                <div class="summary-item">
-                    <span class="summary-item__label">Total instancias</span>
-                    <span class="summary-item__value" id="summary-total">0</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-item__label">En ejecución</span>
-                    <span class="summary-item__value summary-item__value--running" id="summary-running">0</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-item__label">Detenidas</span>
-                    <span class="summary-item__value summary-item__value--stopped" id="summary-stopped">0</span>
-                </div>
+            <div class="stat-item">
+              <span class="stat-value text-neon-green" id="summary-running">0</span>
+              <span class="stat-label">Active / Running</span>
             </div>
+            <div class="stat-item">
+              <span class="stat-value text-neon-red" id="summary-stopped">0</span>
+              <span class="stat-label">Stopped / Offline</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        
+        <section class="card">
+          <div class="card-header">
+            <div class="card-toolbar">
+              <h2>Instance Matrix</h2>
+              <div class="toolbar-right">
+                <input
+                  id="search-input"
+                  type="text"
+                  placeholder="SEARCH PROTOCOL (ID, IP, NAME...)"
+                  style="width: 200px;"
+                />
+                <button type="button" id="btn-refresh" class="btn btn-secondary">
+                  SYNC DATA
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body" style="padding: 0;">
+            <div class="table-wrapper">
+              <table class="table" id="ec2-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>State</th>
+                    <th>Private IP</th>
+                    <th>Public IP</th>
+                    <th>Type</th>
+                    <th>VPC</th>
+                    <th>Subnet</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="ec2-table-body">
+                  <tr>
+                    <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                      INITIALIZING DATALINK...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
-        <div class="layout__columns">
-            <!-- COLUMNA IZQUIERDA: TABLA DE INSTANCIAS -->
-            <section class="card card--stretch">
-                <div class="card__header card__header--with-actions">
-                    <div>
-                        <h2 class="card__title">Instancias EC2</h2>
-                        <p class="card__subtitle">Listado dinámico desde /EC2_in_existance</p>
-                    </div>
-                    <div class="card__actions">
-                        <div class="input-group">
-                            <label for="search-input" class="input-group__label">
-                                Búsqueda
-                            </label>
-                            <input id="search-input"
-                                   type="text"
-                                   class="input-group__input"
-                                   placeholder="Filtrar por ID, nombre, IP, tipo, VPC...">
-                        </div>
-                        <button type="button"
-                                id="btn-refresh"
-                                class="btn btn--secondary">
-                            Refrescar
-                        </button>
-                    </div>
+        <section class="card">
+          <div class="card-header">
+            <h2>Deploy Resource</h2>
+          </div>
+          <div class="card-body">
+            <form id="create-ec2-form" novalidate>
+              
+              <div class="form-group">
+                <label for="image_id">Target AMI (OS Image)</label>
+                <select id="image_id" name="image_id" required style="width: 100%;">
+                  <option value="">-- Select System Image --</option>
+                  </select>
+                <div class="form-field__error" data-error-for="image_id"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="instance_type">Hardware Profile</label>
+                <select id="instance_type" name="instance_type" required style="width: 100%;">
+                  <option value="">-- Select Capacity --</option>
+                  </select>
+                <div class="form-field__error" data-error-for="instance_type"></div>
+              </div>
+
+              <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1.5rem 0;">
+
+              <div class="form-group">
+                <label for="vpc_id">Network Environment (VPC)</label>
+                <select id="vpc_id" name="vpc_id" required style="width: 100%;">
+                  <option value="">-- Select Network --</option>
+                  </select>
+                <div class="form-field__error" data-error-for="vpc_id"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="subnet_id">Subnet Zone</label>
+                <select id="subnet_id" name="subnet_id" required disabled style="width: 100%;">
+                  <option value="">-- Waiting for VPC --</option>
+                  </select>
+                <div class="form-field__error" data-error-for="subnet_id"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="key_name">Cryptographic Key</label>
+                <select id="key_name" name="key_name" required style="width: 100%;">
+                  <option value="">-- Select Keypair --</option>
+                  </select>
+                <div class="form-field__error" data-error-for="key_name"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="security_group_id">Firewall Rules (SG)</label>
+                <select id="security_group_id" name="security_group_id" required disabled style="width: 100%;">
+                  <option value="">-- Waiting for VPC --</option>
+                  </select>
+                <div class="form-field__error" data-error-for="security_group_id"></div>
+              </div>
+
+              <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <div class="form-group" style="flex: 1;">
+                  <label for="max_count">Count</label>
+                  <input id="max_count" name="max_count" type="number" min="1" max="20" value="1" required style="width: 100%;">
                 </div>
-
-                <div class="card__body card__body--no-padding">
-                    <div class="table-wrapper">
-                        <table class="table" id="ec2-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nombre</th>
-                                    <th>Estado</th>
-                                    <th>IP privada</th>
-                                    <th>Tipo</th>
-                                    <th>VPC</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ec2-table-body">
-                                <!-- Filas generadas vía JS -->
-                                <tr>
-                                    <td colspan="7" class="table__empty">
-                                        Cargando instancias...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="form-group" style="flex: 2;">
+                  <label for="instance_name">Tag Name</label>
+                  <input id="instance_name" name="instance_name" type="text" maxlength="64" required placeholder="srv-prod-01" style="width: 100%;">
                 </div>
-            </section>
+              </div>
 
-            <!-- COLUMNA DERECHA: FORM CREACIÓN -->
-            <section class="card card--stretch">
-                <div class="card__header">
-                    <h2 class="card__title">Crear instancia EC2</h2>
-                    <p class="card__subtitle">
-                        Los campos son validados en frontend antes de enviarse al backend.
-                    </p>
-                </div>
-                <div class="card__body">
-                    <form id="create-ec2-form" novalidate>
-                        <!-- AMI + Instance type -->
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label for="image_id" class="form-field__label">
-                                    AMI (ImageId)
-                                </label>
-                                <select id="image_id" name="image_id" class="form-field__control" required>
-                                    <option value="">Selecciona una AMI</option>
-                                    <!-- Opciones fijas / cargadas por JS -->
-                                </select>
-                                <small class="form-field__hint">
-                                    Lista fija basada en tus AMIs de referencia.
-                                </small>
-                                <div class="form-field__error" data-error-for="image_id"></div>
-                            </div>
+              <div class="form-group" style="margin-top: 1rem;">
+                <label for="user_data">User Data (Boot Script)</label>
+                <textarea 
+                  id="user_data" 
+                  name="user_data" 
+                  rows="3" 
+                  placeholder="#!/bin/bash&#10;yum update -y"
+                  style="width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 0.6rem; color: var(--text-main); font-family: monospace; font-size: 0.85rem; resize: vertical;"
+                ></textarea>
+                <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+                    Optional. Bash scripts or cloud-init directives executed at launch.
+                </small>
+              </div>
 
-                            <div class="form-field">
-                                <label for="instance_type" class="form-field__label">
-                                    Instance type
-                                </label>
-                                <select id="instance_type" name="instance_type" class="form-field__control" required>
-                                    <option value="">Selecciona un tipo</option>
-                                    <!-- Opciones fijas / cargadas por JS -->
-                                </select>
-                                <div class="form-field__error" data-error-for="instance_type"></div>
-                            </div>
-                        </div>
+              <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                  INITIATE LAUNCH
+                </button>
+                <button type="button" id="btn-reset-form" class="btn btn-secondary">
+                  RESET
+                </button>
+              </div>
 
-                        <!-- VPC -->
-                        <div class="form-row">
-                            <div class="form-field form-field--full">
-                                <label for="vpc_id" class="form-field__label">
-                                    VPC
-                                </label>
-                                <select id="vpc_id" name="vpc_id" class="form-field__control" required>
-                                    <option value="">Selecciona una VPC</option>
-                                    <!-- Llenado desde /VPC_in_existance -->
-                                </select>
-                                <small class="form-field__hint">
-                                    Primero selecciona la VPC; luego podrás elegir Subnet y Security Group asociados.
-                                </small>
-                                <div class="form-field__error" data-error-for="vpc_id"></div>
-                            </div>
-                        </div>
-
-                        <!-- Subnet -->
-                        <div class="form-row">
-                            <div class="form-field form-field--full">
-                                <label for="subnet_id" class="form-field__label">
-                                    Subnet
-                                </label>
-                                <select id="subnet_id" name="subnet_id" class="form-field__control" required disabled>
-                                    <option value="">Selecciona una Subnet</option>
-                                    <!-- Llenado dinámico según VPC -->
-                                </select>
-                                <div class="form-field__error" data-error-for="subnet_id"></div>
-                            </div>
-                        </div>
-
-                        <!-- Keys + SG -->
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label for="key_name" class="form-field__label">
-                                    KeyPair
-                                </label>
-                                <select id="key_name" name="key_name" class="form-field__control" required>
-                                    <option value="">Selecciona un KeyPair</option>
-                                    <!-- Llenado desde /get_available_keys -->
-                                </select>
-                                <div class="form-field__error" data-error-for="key_name"></div>
-                            </div>
-
-                            <div class="form-field">
-                                <label for="security_group_id" class="form-field__label">
-                                    Security Group
-                                </label>
-                                <select id="security_group_id" name="security_group_id" class="form-field__control" required disabled>
-                                    <option value="">Selecciona un Security Group</option>
-                                    <!-- Llenado dinámico según VPC -->
-                                </select>
-                                <div class="form-field__error" data-error-for="security_group_id"></div>
-                            </div>
-                        </div>
-
-                        <!-- Count + Name -->
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label for="max_count" class="form-field__label">
-                                    Número de instancias
-                                </label>
-                                <input id="max_count"
-                                       name="max_count"
-                                       type="number"
-                                       min="1"
-                                       max="20"
-                                       class="form-field__control"
-                                       value="1"
-                                       required>
-                                <div class="form-field__error" data-error-for="max_count"></div>
-                            </div>
-
-                            <div class="form-field">
-                                <label for="instance_name" class="form-field__label">
-                                    Nombre (Tag Name)
-                                </label>
-                                <input id="instance_name"
-                                       name="instance_name"
-                                       type="text"
-                                       class="form-field__control"
-                                       maxlength="64"
-                                       required
-                                       placeholder="web-server-01">
-                                <div class="form-field__error" data-error-for="instance_name"></div>
-                            </div>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn--primary">
-                                Crear instancia
-                            </button>
-                            <button type="button"
-                                    id="btn-reset-form"
-                                    class="btn btn--ghost">
-                                Limpiar formulario
-                            </button>
-                        </div>
-
-                        <div id="create-ec2-feedback" class="form-feedback" aria-live="polite"></div>
-                    </form>
-                </div>
-            </section>
-        </div>
+              <div id="create-ec2-feedback" style="margin-top: 1rem; font-size: 0.85rem;"></div>
+            </form>
+          </div>
+        </section>
+      </div>
     </main>
 
-    <!-- OVERLAY GLOBAL DE ERROR -->
-    <div id="error-overlay" class="error-overlay error-overlay--hidden">
-        <div class="error-overlay__dialog">
-            <div class="error-overlay__header">
-                <h3 class="error-overlay__title" id="error-overlay-title">
-                    Error inesperado
-                </h3>
+    <div id="error-overlay" class="overlay" style="display: none;">
+      <div class="overlay-content">
+        <div class="modal">
+            <div class="modal-header" style="border-bottom: 1px solid var(--accent-danger);">
+                <h2 style="color: var(--accent-danger);">CRITICAL ERROR</h2>
             </div>
-            <div class="error-overlay__body">
-                <p id="error-overlay-message">
-                    Se ha producido un error. Revisa los detalles en consola o debajo.
-                </p>
-                <pre id="error-overlay-details" class="error-overlay__details"></pre>
+            <div class="modal-body">
+                <p id="error-overlay-message">System encountered an unexpected exception.</p>
+                <pre id="error-overlay-details" style="background: rgba(0,0,0,0.5); padding: 1rem; border-radius: 4px; overflow-x: auto; margin-top: 1rem; font-family: monospace; font-size: 0.8rem; color: #fca5a5;"></pre>
             </div>
-            <div class="error-overlay__footer">
-                <button type="button" id="error-overlay-close" class="btn btn--primary">
-                    Cerrar
+            <div class="modal-footer">
+                <button type="button" id="error-overlay-close" class="btn btn-secondary" onclick="document.getElementById('error-overlay').style.display='none'">
+                    ACKNOWLEDGE
                 </button>
             </div>
         </div>
+      </div>
     </div>
 
-    <!-- JS principal no modular -->
     <script src="{{ url_for('EC2_controller_bp.static', filename='ec2_dashboard.js') }}"></script>
-</body>
+    
+    <script>
+        // Compatibilidad simple para overlay
+        const overlay = document.getElementById('error-overlay');
+    </script>
+  </body>
 </html>

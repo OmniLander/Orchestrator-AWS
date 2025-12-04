@@ -1,0 +1,489 @@
+/* =========================================
+   1. VARIABLES & SETUP (CYBER-EXECUTIVE THEME)
+   ========================================= */
+:root {
+    /* Paleta de Fondo (Deep Dark Mode) */
+    --bg-deep: #0f172a;       /* Slate 900 - Medianoche */
+    --bg-ambient: #1e1b4b;    /* Indigo 950 - Acento ambiental */
+    
+    /* Paleta de Acentos (Neon Gradients) */
+    --accent-primary-start: #3b82f6; /* Electric Blue */
+    --accent-primary-end: #8b5cf6;   /* Cyber Violet */
+    --accent-danger: #ef4444;        /* Red Neon */
+    --accent-success: #10b981;       /* Green Neon */
+    
+    /* Textos */
+    --text-main: #f8fafc;     /* Blanco puro */
+    --text-muted: #94a3b8;    /* Gris azulado */
+    
+    /* Glassmorphism settings */
+    --glass-bg: rgba(30, 41, 59, 0.65); /* Translúcido */
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: 16px;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    
+    /* Dimensiones */
+    --radius-lg: 16px;
+    --radius-md: 8px;
+    --header-height: 70px;
+}
+
+/* Fuente Inter o similar para un look "Tech" limpio */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-deep);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Fondo ambiental (Efecto Glow difuso) */
+body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: -10%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, var(--bg-ambient) 0%, transparent 70%);
+    opacity: 0.6;
+    z-index: -1;
+    pointer-events: none;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%;
+    right: -10%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, #312e81 0%, transparent 70%); /* Dark Indigo */
+    opacity: 0.5;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* =========================================
+   2. LAYOUT & HEADER
+   ========================================= */
+
+/* Header estilo Glass */
+.app-header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(var(--glass-blur));
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.app-header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, var(--text-main), var(--accent-primary-start));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-right: 1rem;
+    display: inline-block;
+}
+
+.app-header-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    border-left: 1px solid var(--glass-border);
+    padding-left: 1rem;
+}
+
+.app-main {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* =========================================
+   3. COMPONENTS: CARDS (GLASS PANELS)
+   ========================================= */
+
+.card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur)); /* Safari */
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); /* Resplandor suave al hover */
+    border-color: rgba(255,255,255, 0.15);
+}
+
+.card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.card-header h2, .card-header h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* =========================================
+   4. TOOLBAR & FORMS
+   ========================================= */
+
+.card-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Inputs Cibernéticos */
+input[type="text"], 
+input[type="number"], 
+select {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1rem;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    width: 250px; /* Default width */
+}
+
+/* Focus glow effect */
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-primary-start);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Form Group Layout inside Modals */
+.form-group {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+}
+
+/* =========================================
+   5. BUTTONS (NEON GRADIENTS)
+   ========================================= */
+
+.btn {
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Primary: Electric Blue -> Cyber Violet */
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary-start), var(--accent-primary-end));
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5); /* Violet glow */
+}
+
+/* Secondary: Ghost Style */
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+}
+
+.btn-secondary:hover {
+    border-color: var(--text-main);
+    color: var(--text-main);
+    background: rgba(255,255,255,0.05);
+}
+
+/* Danger: Red Neon */
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #be123c);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.btn-danger:hover {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+}
+
+/* =========================================
+   6. TABLES
+   ========================================= */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.table thead th {
+    text-align: left;
+    padding: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+    transition: background 0.2s;
+}
+
+.table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03); /* Highlight row */
+}
+
+.table td {
+    padding: 1rem;
+    color: var(--text-main);
+    vertical-align: middle;
+}
+
+/* Estilizar botones pequeños dentro de la tabla */
+.table .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+/* Badges de estado (opcional, si el JS genera spans con clases) */
+.status-running { color: var(--accent-success); text-shadow: 0 0 5px rgba(16, 185, 129, 0.4); }
+.status-stopped { color: var(--accent-danger); }
+.status-pending { color: #f59e0b; }
+
+/* =========================================
+   7. MODALS
+   ========================================= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Fondo oscuro profundo */
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex; /* Flex para centrar */
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal {
+    background: #1e293b; /* Fallback */
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    color: var(--text-main);
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: var(--accent-danger);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    color: var(--text-muted);
+}
+
+.modal-body strong {
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.actions-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* =========================================
+   8. OVERLAYS (LOADING & ERROR)
+   ========================================= */
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.9);
+}
+
+/* Error Modal Specifics */
+#error-overlay .overlay-content {
+    background: rgba(30, 41, 59, 1);
+    border: 1px solid var(--accent-danger);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+    max-width: 400px;
+}
+
+#error-overlay h2 {
+    color: var(--accent-danger);
+    margin-bottom: 1rem;
+}
+
+#error-overlay p {
+    color: var(--text-main);
+    margin-bottom: 1.5rem;
+}
+
+/* Spinner Animado estilo Sci-Fi */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(59, 130, 246, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--accent-primary-start);
+    animation: spin 1s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+    margin-bottom: 1rem;
+}
+
+.overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* =========================================
+   9. ANIMATIONS
+   ========================================= */
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
