@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>AWS Orchestrator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .step-card { margin-bottom: 20px; border-left: 5px solid #ccc; }
+        .step-done { border-left-color: #198754; background-color: #f8fff9; }
+        .console { background: #212529; color: #00ff00; font-family: monospace; padding: 15px; border-radius: 5px; height: 200px; overflow-y: scroll; }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+    <h1 class="mb-4 text-center">AWS Infrastructure Orchestrator</h1>
+    
+    <div class="row">
+        <div class="col-md-7">
+            
+            <div class="card step-card" id="card-net">
+                <div class="card-body">
+                    <h5>1. Networking (VPC, Subnets, IGW)</h5>
+                    <p>Crea VPC 10.0.0.0/16, Subnets Púb/Priv y Rutas.</p>
+                    <button class="btn btn-primary" onclick="deploy('networking')" id="btn-networking">Desplegar Red</button>
+                    <span id="status-networking" class="ms-2"></span>
+                </div>
+            </div>
+
+            <div class="card step-card" id="card-sec">
+                <div class="card-body">
+                    <h5>2. Seguridad (Security Groups)</h5>
+                    <p>Configura reglas de firewall para Oficina y Web.</p>
+                    <button class="btn btn-secondary" onclick="deploy('security')" id="btn-security" disabled>Aplicar Seguridad</button>
+                    <span id="status-security" class="ms-2"></span>
+                </div>
+            </div>
+
+            <div class="card step-card" id="card-web">
+                <div class="card-body">
+                    <h5>3. Compute: Servidor Web</h5>
+                    <p>Instancia t2.micro privada con Apache.</p>
+                    <button class="btn btn-secondary" onclick="deploy('web')" id="btn-web" disabled>Lanzar Web</button>
+                    <span id="status-web" class="ms-2"></span>
+                </div>
+            </div>
+
+            <div class="card step-card" id="card-office">
+                <div class="card-body">
+                    <h5>4. Compute: Oficina Remota</h5>
+                    <p>Ubuntu Desktop (t3.medium) con acceso RDP.</p>
+                    <button class="btn btn-secondary" onclick="deploy('oficina')" id="btn-oficina" disabled>Lanzar Oficina</button>
+                    <span id="status-oficina" class="ms-2"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-5">
+            <h5>Estado del Sistema (Memoria)</h5>
+            <div id="console-log" class="console">
+                Esperando acciones...
+            </div>
+            <div class="mt-3 alert alert-info">
+                <strong>Datos de Conexión:</strong><br>
+                Usuario RDP: <code>empleado</code><br>
+                Password: <code>Oficina123</code><br>
+                <hr>
+                IP Pública (Oficina): <span id="disp-ip-office">---</span><br>
+                IP Privada (Web): <span id="disp-ip-web">---</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function log(msg) {
+        const consoleDiv = document.getElementById('console-log');
+        consoleDiv.innerHTML += `> ${msg}<br>`;
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    // MAPEO EXPLÍCITO: Vincula el nombre del módulo con el ID del HTML
+    // Esto evita errores de substring y hace el código más mantenible.
+    const uiMap = {
+        'networking': { cardId: 'card-net', nextBtn: 'btn-security' },
+        'security':   { cardId: 'card-sec', nextBtn: 'btn-web' },
+        'web':        { cardId: 'card-web', nextBtn: 'btn-oficina' },
+        'oficina':    { cardId: 'card-office', nextBtn: null }
+    };
+
+    async function deploy(module) {
+        const btn = document.getElementById(`btn-${module}`);
+        const statusSpan = document.getElementById(`status-${module}`);
+        
+        // Estado visual de carga
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+        log(`Iniciando despliegue de ${module}...`);
+
+        try {
+            const response = await fetch(`/deploy/${module}`, { method: 'POST' });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                log(`${module.toUpperCase()} desplegado correctamente.`);
+                statusSpan.innerHTML = '✅ Listo';
+                
+                // 1. Marcar la tarjeta como completada visualmente
+                const currentCardId = uiMap[module].cardId;
+                const cardElement = document.getElementById(currentCardId);
+                if (cardElement) {
+                    cardElement.classList.add('step-done');
+                }
+
+                // 2. Habilitar el siguiente botón (si existe)
+                const nextBtnId = uiMap[module].nextBtn;
+                if (nextBtnId) {
+                    document.getElementById(nextBtnId).disabled = false;
+                }
+
+                // 3. Manejo específico de datos retornados (IPs)
+                if (module === 'web') {
+                    document.getElementById('disp-ip-web').innerText = data.ip_privada;
+                    log(`IP Web capturada: ${data.ip_privada}`);
+                }
+                if (module === 'oficina') {
+                    document.getElementById('disp-ip-office').innerText = data.ip_publica;
+                    log(`IP Oficina capturada: ${data.ip_publica}`);
+                    log("PROYECTO COMPLETADO. Accede vía RDP.");
+                }
+
+                // Actualizar estado final del botón actual
+                btn.innerText = 'Desplegado';
+                btn.classList.remove('btn-primary', 'btn-secondary');
+                btn.classList.add('btn-success');
+                
+            } else {
+                // Manejo de errores del Backend (Boto3)
+                log(`ERROR AWS: ${data.message}`);
+                btn.disabled = false;
+                btn.innerText = 'Reintentar';
+                btn.classList.add('btn-danger');
+            }
+        } catch (error) {
+            // Manejo de errores de Red / Fetch
+            log(`CRITICAL ERROR: ${error}`);
+            console.error(error); // Para ver detalle en F12
+            btn.disabled = false;
+            btn.innerText = 'Error';
+        }
+    }
+</script>
+
+</body>
+</html>
