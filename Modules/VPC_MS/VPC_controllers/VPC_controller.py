@@ -1,17 +1,17 @@
-from Modules.VPC_MS.VPC_constants.VPC_creation import create_vpc, create_subnet, orq_vpc, orq_subnet
-from Modules.VPC_MS.VPC_constants.VPC_elimination import delete_vpc, delete_subnet
-from Modules.VPC_MS.VPC_constants.VPC_verification import vpcs_in_existence, subnets_in_existence
-from Modules.VPC_MS.VPC_constants.ACL_verification import acl_in_existance
-from Modules.VPC_MS.VPC_constants.ACL_creation import create_ACL
-from Modules.VPC_MS.VPC_constants.ACL_elimination import delete_acl, delete_acl_entry
-from Modules.VPC_MS.VPC_constants.ACL_update import acl_update
-from Modules.VPC_MS.VPC_constants.IGW_creation import create_igw
-from Modules.VPC_MS.VPC_constants.IGW_elimination import delete_igw
-from Modules.VPC_MS.VPC_constants.IGW_update import igw_attach
-from Modules.VPC_MS.VPC_constants.IGW_verification import igw_in_existence
-from Modules.VPC_MS.VPC_constants.RouteTable_update import associate_rt
-from Modules.VPC_MS.VPC_constants.RouteTable_verification import route_table_in_existence 
-from Modules.VPC_MS.VPC_constants.RouteTable_creation import create_route, create_route_table
+from Modules.VPC_MS.VPC_Constants.VPC_Creation import create_vpc, create_subnet, orq_vpc, orq_subnet
+from Modules.VPC_MS.VPC_Constants.VPC_elimination import delete_vpc, delete_subnet
+from Modules.VPC_MS.VPC_Constants.VPC_Verification import vpcs_in_existence, subnets_in_existence
+from Modules.VPC_MS.VPC_Constants.ACL_verification import acl_in_existance
+from Modules.VPC_MS.VPC_Constants.ACL_creation import create_ACL
+from Modules.VPC_MS.VPC_Constants.ACL_elimination import delete_acl, delete_acl_entry
+from Modules.VPC_MS.VPC_Constants.ACL_update import acl_update
+from Modules.VPC_MS.VPC_Constants.IGW_creation import create_igw
+from Modules.VPC_MS.VPC_Constants.IGW_elimination import delete_igw
+from Modules.VPC_MS.VPC_Constants.IGW_update import igw_attach
+from Modules.VPC_MS.VPC_Constants.IGW_verification import igw_in_existence
+from Modules.VPC_MS.VPC_Constants.RouteTable_update import associate_rt
+from Modules.VPC_MS.VPC_Constants.RouteTable_verification import route_table_in_existence 
+from Modules.VPC_MS.VPC_Constants.RouteTable_creation import create_route, create_route_table
 from flask import Blueprint, render_template, request, redirect, url_for, Response, jsonify
 
 VPC_controller_bp = Blueprint("VPC_controller_bp", __name__,
