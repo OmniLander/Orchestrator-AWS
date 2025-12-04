@@ -13,7 +13,7 @@ EC2_controller_bp = Blueprint("EC2_controller_bp", __name__,
 #Render template to serve as a HTML loader
 @EC2_controller_bp.route('/Ec2_dashboard', methods=["GET"])
 def Ec2_dashboard():
-    return render_template('EC2_dashboard.html')
+    return render_template('Ec2_dashboard.html')
 
 #endpoints
 @EC2_controller_bp.route('/EC2_in_existance', methods=['GET'])
