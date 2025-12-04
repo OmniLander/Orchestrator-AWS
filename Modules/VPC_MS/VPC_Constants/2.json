@@ -1,0 +1,125 @@
+{
+    "success": True,
+    "data": [
+        {
+            "route_table_id": "rtb-0a05caad035726b35",
+            "vpc_id": "vpc-06e734319adab1044",
+            "is_main": False,
+            "associated_subnets": [
+                "subnet-075d553ec2e18c744"
+            ],
+            "tags": {
+                "Name": "proyecto-rtb-private2-us-east-1b"
+            },
+            "routes": [
+                {
+                    "destination": "10.0.0.0/16",
+                    "target": "local"
+                },
+                {
+                    "destination": "pl-63a5400a",
+                    "target": "vpce-0a31ccb5c222a6cf5"
+                }
+            ]
+        },
+        {
+            "route_table_id": "rtb-0e56d410e2a9c3858",
+            "vpc_id": "vpc-06e734319adab1044",
+            "is_main": False,
+            "associated_subnets": [
+                "subnet-063557890b76ad3d1",
+                "subnet-05a7932640dcf8452"
+            ],
+            "tags": {
+                "Name": "proyecto-rtb-public"
+            },
+            "routes": [
+                {
+                    "destination": "10.0.0.0/16",
+                    "target": "local"
+                },
+                {
+                    "destination": "0.0.0.0/0",
+                    "target": "igw-099c97da840fda44c"
+                }
+            ]
+        },
+        {
+            "route_table_id": "rtb-0d0acc25e48e192ed",
+            "vpc_id": "vpc-06e734319adab1044",
+            "is_main": False,
+            "associated_subnets": [
+                "subnet-0c8585a8fafa6598b"
+            ],
+            "tags": {
+                "Name": "proyecto-rtb-private1-us-east-1a"
+            },
+            "routes": [
+                {
+                    "destination": "10.0.0.0/16",
+                    "target": "local"
+                },
+                {
+                    "destination": "pl-63a5400a",
+                    "target": "vpce-0a31ccb5c222a6cf5"
+                }
+            ]
+        },
+        {
+            "route_table_id": "rtb-09bb15847775fc4d8",
+            "vpc_id": "vpc-0fcad6a49891c30ef",
+            "is_main": True,
+            "associated_subnets": [],
+            "tags": {},
+            "routes": [
+                {
+                    "destination": "172.31.0.0/16",
+                    "target": "local"
+                },
+                {
+                    "destination": "0.0.0.0/0",
+                    "target": "igw-01468c722eb8e1949"
+                }
+            ]
+        },
+        {
+            "route_table_id": "rtb-0084b46c2ab3a5a1a",
+            "vpc_id": "vpc-050094e05ab760f21",
+            "is_main": True,
+            "associated_subnets": [],
+            "tags": {},
+            "routes": [
+                {
+                    "destination": "10.0.0.0/24",
+                    "target": "local"
+                }
+            ]
+        },
+        {
+            "route_table_id": "rtb-0993ee402d19396c1",
+            "vpc_id": "vpc-06e734319adab1044",
+            "is_main": True,
+            "associated_subnets": [],
+            "tags": {},
+            "routes": [
+                {
+                    "destination": "10.0.0.0/16",
+                    "target": "local"
+                }
+            ]
+        },
+        {
+            "route_table_id": "rtb-088e3a2355c0575d3",
+            "vpc_id": "vpc-07f1cf00fb78f8829",
+            "is_main": True,
+            "associated_subnets": [],
+            "tags": {},
+            "routes": [
+                {
+                    "destination": "10.0.0.0/16",
+                    "target": "local"
+                }
+            ]
+        }
+    ]
+}

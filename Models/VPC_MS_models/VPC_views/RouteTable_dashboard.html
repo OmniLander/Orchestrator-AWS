@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>AWS Orchestrator - Route Tables</title>
+
+    <link rel="stylesheet" href="{{ url_for('VPC_controller_bp.static', filename='theme.css') }}">
+</head>
+<body>
+
+<header class="aws-header">
+    <div class="aws-header-left">
+        <h1>Route Table Dashboard</h1>
+        <span class="aws-header-subtitle">Administración de Route Tables</span>
+    </div>
+</header>
+
+<div class="aws-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="aws-sidebar">
+        <ul>
+            <li><a href="{{ url_for('VPC_controller_bp.VPC_dashboard') }}">VPC Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.Subnet_dashboard') }}">Subnet Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.ACL_dashboard') }}">ACL Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.IGW_dashboard') }}">IGW Dashboard</a></li>
+            <li class="active"><a href="#">Route Tables</a></li>
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="aws-main">
+
+        <!-- ACTIONS -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <h2>Administración de Route Tables</h2>
+            </div>
+
+            <div class="aws-card-body aws-card-body-actions">
+                <div class="aws-actions-left">
+                    <button id="open-create-rt-btn" class="aws-btn aws-btn-primary">
+                        Crear Route Table
+                    </button>
+
+                    <button id="open-create-route-btn" class="aws-btn aws-btn-secondary">
+                        Crear Route
+                    </button>
+
+                    <button id="open-associate-rt-btn" class="aws-btn aws-btn-secondary">
+                        Asociar Route Table a Subnet
+                    </button>
+                </div>
+
+                <div class="aws-actions-right">
+                    <input
+                        id="rt-search"
+                        class="aws-input"
+                        placeholder="Buscar por RouteTable ID, VPC, subnet o destino..."
+                    >
+                </div>
+            </div>
+        </section>
+
+        <!-- TABLE -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <h2>Route Tables existentes</h2>
+            </div>
+
+            <div class="aws-card-body">
+                <table class="aws-table">
+                    <thead>
+                    <tr>
+                        <th>RouteTable ID</th>
+                        <th>Nombre</th>
+                        <th>VPC ID</th>
+                        <th>Main</th>
+                        <th>Subnets asociadas</th>
+                        <th>Rutas</th>
+                        <th>Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody id="rt-tbody">
+                    <!-- dinámico -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- MODAL: CREAR ROUTE TABLE -->
+<div id="create-rt-modal" class="aws-modal" style="display:none;">
+    <div class="aws-modal-content">
+
+        <div class="aws-modal-header">
+            <h3>Crear Route Table</h3>
+            <button id="close-create-rt-btn" class="aws-modal-close">&times;</button>
+        </div>
+
+        <div class="aws-modal-body">
+            <form id="create-rt-form">
+
+                <div class="aws-form-group">
+                    <label>Selecciona VPC</label>
+                    <select id="rt-vpc-select" class="aws-select"></select>
+                </div>
+
+                <p class="aws-text-muted">
+                    La Route Table se creará asociada a la VPC seleccionada.  
+                    El destino por defecto "local" es manejado por AWS.
+                </p>
+
+                <div class="aws-modal-footer">
+                    <button type="button" id="cancel-create-rt" class="aws-btn">Cancelar</button>
+                    <button type="submit" class="aws-btn aws-btn-primary">Crear</button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: CREAR ROUTE -->
+<div id="create-route-modal" class="aws-modal" style="display:none;">
+    <div class="aws-modal-content">
+
+        <div class="aws-modal-header">
+            <h3>Crear Route (0.0.0.0/0 → IGW)</h3>
+            <button id="close-create-route-btn" class="aws-modal-close">&times;</button>
+        </div>
+
+        <div class="aws-modal-body">
+            <form id="create-route-form">
+
+                <div class="aws-form-group">
+                    <label>Route Table</label>
+                    <select id="route-rt-select" class="aws-select"></select>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Internet Gateway</label>
+                    <select id="route-igw-select" class="aws-select"></select>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Destino</label>
+                    <input class="aws-input" value="0.0.0.0/0" disabled>
+                    <small class="aws-text-muted">El backend crea la ruta siempre a 0.0.0.0/0.</small>
+                </div>
+
+                <div class="aws-modal-footer">
+                    <button type="button" id="cancel-create-route" class="aws-btn">Cancelar</button>
+                    <button type="submit" class="aws-btn aws-btn-primary">Crear ruta</button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: ASOCIAR RT A SUBNET -->
+<div id="associate-rt-modal" class="aws-modal" style="display:none;">
+    <div class="aws-modal-content">
+
+        <div class="aws-modal-header">
+            <h3>Asociar Route Table a Subnet</h3>
+            <button id="close-associate-rt-btn" class="aws-modal-close">&times;</button>
+        </div>
+
+        <div class="aws-modal-body">
+            <form id="associate-rt-form">
+
+                <div class="aws-form-group">
+                    <label>Route Table</label>
+                    <select id="associate-rt-select" class="aws-select"></select>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Subnet</label>
+                    <select id="associate-subnet-select" class="aws-select"></select>
+                </div>
+
+                <p class="aws-text-muted">
+                    Validación avanzada: solo se permiten asociaciones entre subnets y route tables de la misma VPC.
+                </p>
+
+                <div class="aws-modal-footer">
+                    <button type="button" id="cancel-associate-rt" class="aws-btn">Cancelar</button>
+                    <button type="submit" class="aws-btn aws-btn-primary">Asociar</button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- OVERLAY ERROR -->
+<div id="error-overlay" class="aws-overlay" style="display:none;">
+    <div class="aws-overlay-content aws-overlay-error">
+        <h3>Error</h3>
+        <p id="error-message"></p>
+        <button id="close-error-btn" class="aws-btn aws-btn-primary">Cerrar</button>
+    </div>
+</div>
+
+<!-- OVERLAY LOADING -->
+<div id="loading-overlay" class="aws-overlay" style="display:none;">
+    <div class="aws-overlay-content aws-overlay-loading">
+        <div class="aws-spinner"></div>
+        <span>Cargando...</span>
+    </div>
+</div>
+
+<script src="{{ url_for('VPC_controller_bp.static', filename='RouteTable_dashboard.js') }}"></script>
+
+</body>
+</html>

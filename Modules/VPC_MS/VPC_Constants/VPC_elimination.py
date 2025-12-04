@@ -8,8 +8,8 @@ def delete_vpc(vpc_id):
         response = vpc_client.delete_vpc(
             VpcId = vpc_id,
         )
-        reply = f"The VPC with id {vpc_id} have been succesfully deleted" 
-        return reply
+        
+        return {"success": True, "data": {"message": "Successfully  deleted", "vpc_id": vpc_id}}
     
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
@@ -29,8 +29,8 @@ def delete_subnet(subnet_id):
         response = subnet_client.delete_subnet(
             SubnetId = subnet_id,
         )
-        reply = f"The subnet with id {subnet_id} have been succesfully deleted" 
-        return reply
+        
+        return {"success": True, "data": {"message": "Successfully  deleted", "subnet_id": subnet_id}}
     
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")

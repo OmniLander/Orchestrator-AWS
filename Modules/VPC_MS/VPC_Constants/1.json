@@ -1,0 +1,83 @@
+{
+    "InternetGateways": [
+        {
+            "Attachments": [
+                {
+                    "State": "available",
+                    "VpcId": "vpc-0fcad6a49891c30ef"
+                }
+            ],
+            "InternetGatewayId": "igw-01468c722eb8e1949",
+            "OwnerId": "247686535912",
+            "Tags": []
+        },
+        {
+            "Attachments": [],
+            "InternetGatewayId": "igw-07635943d62ab4ee1",
+            "OwnerId": "247686535912",
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "Nujabes"
+                }
+            ]
+        },
+        {
+            "Attachments": [],
+            "InternetGatewayId": "igw-08c6f7970ba676cc7",
+            "OwnerId": "247686535912",
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "Stairway To Heaven"
+                }
+            ]
+        },
+        {
+            "Attachments": [
+                {
+                    "State": "available",
+                    "VpcId": "vpc-06e734319adab1044"
+                }
+            ],
+            "InternetGatewayId": "igw-099c97da840fda44c",
+            "OwnerId": "247686535912",
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "proyecto-igw"
+                }
+            ]
+        },
+        {
+            "Attachments": [
+                {
+                    "State": "available",
+                    "VpcId": "vpc-07f1cf00fb78f8829"
+                }
+            ],
+            "InternetGatewayId": "igw-0a6ef45fc6d73ee7c",
+            "OwnerId": "247686535912",
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "internet test"
+                }
+            ]
+        }
+    ],
+    "ResponseMetadata": {
+        "RequestId": "5f58782f-470a-477a-a1c7-1e652396afe9",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "x-amzn-requestid": "5f58782f-470a-477a-a1c7-1e652396afe9",
+            "cache-control": "no-cache, no-store",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-type": "text/xml;charset=UTF-8",
+            "content-length": "1420",
+            "date": "Wed, 03 Dec 2025 18:27:14 GMT",
+            "server": "AmazonEC2"
+        },
+        "RetryAttempts": 0
+    }
+}

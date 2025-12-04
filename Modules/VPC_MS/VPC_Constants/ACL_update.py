@@ -11,7 +11,7 @@ def acl_update(acl_id, rule_number, protocol, action, egress: bool, cidr_block, 
             'Protocol': protocol,
             'RuleAction': action,
             'Egress': egress,
-            'CidrBlock': cidr_block # OBLIGATORIO en AWS
+            'CidrBlock': cidr_block 
         }
 
         if protocol in ['tcp', 'udp', '6', '17'] and port_from and port_to:
@@ -22,16 +22,16 @@ def acl_update(acl_id, rule_number, protocol, action, egress: bool, cidr_block, 
 
         response = acl_client.create_network_acl_entry(**acl_args)
 
-        return response
+        return {"success": True, "data": {"message": "Successfully  updated", "rule_number": rule_number}}
 
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
-        return {"error": str(e)}
+        return {"success": False, "error": str(e)}
         
     except ClientError as e:
         print(f"There's been an error with the client side {e}")
-        return {"error": str(e)}
+        return {"success": False, "error": str(e)}
     
     except Exception as e:
         print(f"Unexpected error {e}")
-        return {"error": str(e)}
+        return {"success": False, "error": str(e)}

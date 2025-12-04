@@ -52,7 +52,7 @@ def acl_in_existance():
                     "port_range": entry.get("PortRange", 'N/A')
                 }
 
-        return data 
+        return {"success": True, "data": data} 
 
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>AWS Orchestrator - ACL Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('VPC_controller_bp.static', filename='theme.css') }}">
+</head>
+
+<body>
+
+<header class="aws-header">
+    <div class="aws-header-left">
+        <h1>ACL Dashboard</h1>
+        <span class="aws-header-subtitle">Administración de Network ACLs</span>
+    </div>
+</header>
+
+<div class="aws-layout">
+
+    <!-- Sidebar -->
+    <aside class="aws-sidebar">
+        <ul>
+            <li><a href="{{ url_for('VPC_controller_bp.VPC_dashboard') }}">VPC Dashboard</a></li>
+            <li class="active"><a href="#">ACL Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.Subnet_dashboard') }}">Subnet Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.IGW_dashboard') }}">IGW Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.RouteTable_dashboard') }}">Route Tables</a></li>
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="aws-main">
+
+        <!-- ACTIONS -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <h2>Administración de Network ACL</h2>
+            </div>
+
+            <div class="aws-card-body aws-card-body-actions">
+
+                <div class="aws-actions-left">
+                    <button id="open-create-acl-btn" class="aws-btn aws-btn-primary">
+                        Crear ACL
+                    </button>
+                </div>
+
+                <div class="aws-actions-right">
+                    <input id="acl-search" class="aws-input" placeholder="Buscar por ID, nombre o VPC...">
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TABLE ACL LIST -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <h2>Lista de ACL</h2>
+            </div>
+
+            <div class="aws-card-body">
+                <table class="aws-table">
+                    <thead>
+                        <tr>
+                            <th>ACL ID</th>
+                            <th>Nombre</th>
+                            <th>VPC</th>
+                            <th>Reglas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="acl-tbody">
+                        <!-- Dinámico -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<!-- MODAL CREAR ACL -->
+<div id="create-acl-modal" class="aws-modal" style="display:none;">
+    <div class="aws-modal-content">
+        <div class="aws-modal-header">
+            <h3>Crear ACL</h3>
+            <button id="close-create-acl-btn" class="aws-modal-close">&times;</button>
+        </div>
+
+        <div class="aws-modal-body">
+            <form id="create-acl-form">
+
+                <div class="aws-form-group">
+                    <label>Nombre de la ACL</label>
+                    <input id="acl-name" class="aws-input" required>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Selecciona VPC</label>
+                    <select id="acl-vpc-select" class="aws-select"></select>
+                </div>
+
+                <div class="aws-modal-footer">
+                    <button type="button" id="cancel-create-acl" class="aws-btn">Cancelar</button>
+                    <button type="submit" class="aws-btn aws-btn-primary">Crear</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL REGLAS ACL -->
+<div id="rules-modal" class="aws-modal" style="display:none;">
+    <div class="aws-modal-content rules-modal-width">
+
+        <div class="aws-modal-header">
+            <h3>Reglas de ACL</h3>
+            <button id="close-rules-modal-btn" class="aws-modal-close">&times;</button>
+        </div>
+
+        <div class="aws-modal-body">
+
+            <h4>Reglas existentes</h4>
+            <table class="aws-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tipo</th>
+                        <th>Acción</th>
+                        <th>Protocolo</th>
+                        <th>CIDR</th>
+                        <th>Rango Puertos</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="rules-tbody">
+                    <!-- dinámico -->
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h4>Crear / Actualizar Regla</h4>
+
+            <form id="rule-form">
+
+                <div class="aws-form-group">
+                    <label>Número de regla</label>
+                    <input id="rule-number" class="aws-input" type="number" min="1" max="32766">
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Tipo</label>
+                    <select id="rule-type" class="aws-select">
+                        <option value="ingress">Ingress</option>
+                        <option value="egress">Egress</option>
+                    </select>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Acción</label>
+                    <select id="rule-action" class="aws-select">
+                        <option value="allow">ALLOW</option>
+                        <option value="deny">DENY</option>
+                    </select>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Protocolo</label>
+                    <select id="rule-protocol" class="aws-select">
+                        <option value="tcp">TCP</option>
+                        <option value="udp">UDP</option>
+                        <option value="icmp">ICMP</option>
+                        <option value="all">ALL</option>
+                    </select>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>CIDR Block</label>
+                    <input id="rule-cidr" class="aws-input" placeholder="0.0.0.0/0">
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Puerto (from)</label>
+                    <input id="rule-port-from" class="aws-input" type="number" min="0" max="65535">
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Puerto (to)</label>
+                    <input id="rule-port-to" class="aws-input" type="number" min="0" max="65535">
+                </div>
+
+                <div class="aws-modal-footer">
+                    <button type="button" id="cancel-rule" class="aws-btn">Cancelar</button>
+                    <button type="submit" class="aws-btn aws-btn-primary">Guardar Regla</button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- OVERLAYS -->
+<div id="error-overlay" class="aws-overlay" style="display:none;">
+    <div class="aws-overlay-content aws-overlay-error">
+        <h3>Error</h3>
+        <p id="error-message"></p>
+        <button id="close-error-btn" class="aws-btn aws-btn-primary">Cerrar</button>
+    </div>
+</div>
+
+<div id="loading-overlay" class="aws-overlay" style="display:none;">
+    <div class="aws-overlay-content aws-overlay-loading">
+        <div class="aws-spinner"></div>
+        <span>Cargando...</span>
+    </div>
+</div>
+
+<script src="{{ url_for('VPC_controller_bp.static', filename='ACL_dashboard.js') }}"></script>
+
+</body>
+</html>

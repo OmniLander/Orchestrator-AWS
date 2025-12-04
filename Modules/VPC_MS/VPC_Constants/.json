@@ -1,0 +1,27 @@
+{
+    "igw-01468c722eb8e1949": {
+        "igw_name": "N/A",
+        "igw_state": "available",
+        "igw_vpc": "vpc-0fcad6a49891c30ef"
+    },
+    "igw-07635943d62ab4ee1": {
+        "igw_name": "Nujabes",
+        "igw_state": "detached",
+        "igw_vpc": "N/A"
+    },
+    "igw-08c6f7970ba676cc7": {
+        "igw_name": "Stairway To Heaven",
+        "igw_state": "detached",
+        "igw_vpc": "N/A"
+    },
+    "igw-099c97da840fda44c": {
+        "igw_name": "proyecto-igw",
+        "igw_state": "available",
+        "igw_vpc": "vpc-06e734319adab1044"
+    },
+    "igw-0a6ef45fc6d73ee7c": {
+        "igw_name": "internet test",
+        "igw_state": "available",
+        "igw_vpc": "vpc-07f1cf00fb78f8829"
+    }
+}

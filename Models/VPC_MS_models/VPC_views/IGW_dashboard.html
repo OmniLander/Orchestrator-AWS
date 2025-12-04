@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>AWS Orchestrator - IGW Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('VPC_controller_bp.static', filename='theme.css') }}">
+</head>
+<body>
+
+<header class="aws-header">
+    <div class="aws-header-left">
+        <h1>IGW Dashboard</h1>
+        <span class="aws-header-subtitle">Administración de Internet Gateways</span>
+    </div>
+</header>
+
+<div class="aws-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="aws-sidebar">
+        <ul>
+            <li><a href="{{ url_for('VPC_controller_bp.VPC_dashboard') }}">VPC Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.ACL_dashboard') }}">ACL Dashboard</a></li>
+            <li class="active"><a href="#">IGW Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.Subnet_dashboard') }}">Subnet Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.RouteTable_dashboard') }}">Route Tables</a></li>
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="aws-main">
+
+        <!-- ACTION BAR -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <h2>Administración de Internet Gateways</h2>
+            </div>
+
+            <div class="aws-card-body aws-card-body-actions">
+                <div class="aws-actions-left">
+                    <button id="open-create-igw-btn" class="aws-btn aws-btn-primary">
+                        Crear IGW
+                    </button>
+
+                    <button id="open-attach-igw-btn" class="aws-btn aws-btn-secondary">
+                        Adjuntar IGW a VPC
+                    </button>
+                </div>
+
+                <div class="aws-actions-right">
+                    <input id="igw-search" class="aws-input" placeholder="Buscar por ID, nombre o VPC...">
+                </div>
+            </div>
+        </section>
+
+        <!-- IGW TABLE -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <h2>Internet Gateways Existentes</h2>
+            </div>
+
+            <div class="aws-card-body">
+                <table class="aws-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Estado</th>
+                            <th>VPC Asociada</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="igw-tbody">
+                        <!-- dinámico -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- MODAL CREAR IGW -->
+<div id="create-igw-modal" class="aws-modal" style="display:none;">
+    <div class="aws-modal-content">
+
+        <div class="aws-modal-header">
+            <h3>Crear Internet Gateway</h3>
+            <button id="close-create-igw-btn" class="aws-modal-close">&times;</button>
+        </div>
+
+        <div class="aws-modal-body">
+            <form id="create-igw-form">
+
+                <div class="aws-form-group">
+                    <label>Nombre del IGW</label>
+                    <input id="igw-name" class="aws-input" required>
+                </div>
+
+                <div class="aws-modal-footer">
+                    <button type="button" id="cancel-create-igw" class="aws-btn">Cancelar</button>
+                    <button type="submit" class="aws-btn aws-btn-primary">Crear</button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL ATTACH IGW -->
+<div id="attach-igw-modal" class="aws-modal" style="display:none;">
+    <div class="aws-modal-content">
+
+        <div class="aws-modal-header">
+            <h3>Adjuntar IGW a una VPC</h3>
+            <button id="close-attach-igw-btn" class="aws-modal-close">&times;</button>
+        </div>
+
+        <div class="aws-modal-body">
+
+            <form id="attach-igw-form">
+
+                <div class="aws-form-group">
+                    <label>Selecciona IGW</label>
+                    <select id="attach-igw-select" class="aws-select"></select>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Selecciona VPC</label>
+                    <select id="attach-vpc-select" class="aws-select"></select>
+                </div>
+
+                <div class="aws-modal-footer">
+                    <button type="button" id="cancel-attach-igw" class="aws-btn">Cancelar</button>
+                    <button type="submit" class="aws-btn aws-btn-primary">Adjuntar</button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- OVERLAY ERROR -->
+<div id="error-overlay" class="aws-overlay" style="display:none;">
+    <div class="aws-overlay-content aws-overlay-error">
+        <h3>Error</h3>
+        <p id="error-message"></p>
+        <button id="close-error-btn" class="aws-btn aws-btn-primary">Cerrar</button>
+    </div>
+</div>
+
+<!-- OVERLAY LOADING -->
+<div id="loading-overlay" class="aws-overlay" style="display:none;">
+    <div class="aws-overlay-content aws-overlay-loading">
+        <div class="aws-spinner"></div>
+        <span>Cargando...</span>
+    </div>
+</div>
+
+<script src="{{ url_for('VPC_controller_bp.static', filename='igw_dashboard.js') }}"></script>
+
+</body>
+</html>

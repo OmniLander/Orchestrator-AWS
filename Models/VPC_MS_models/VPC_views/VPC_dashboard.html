@@ -2,370 +2,131 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOC Panel - AWS Style</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amazon+Ember:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="{{ url_for('VPC_controller_bp.static', filename='VPC_dashboard.css') }}">
+    <title>AWS Orchestrator - VPC Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('VPC_controller_bp.static', filename='theme.css') }}">
 </head>
+
 <body>
-    <!-- AWS Style Header -->
+
+    <!-- HEADER -->
     <header class="aws-header">
-        <div class="aws-logo">
-            <div class="aws-logo-icon">NOC</div>
-            <div class="aws-logo-text">Network Operations Center</div>
+        <div class="aws-header-left">
+            <h1>VPC Dashboard</h1>
+            <span class="aws-header-subtitle">Administración de VPCs</span>
         </div>
-        <nav class="aws-nav">
-            <a href="#" class="aws-nav-item">Dashboard</a>
-            <a href="#" class="aws-nav-item">VPC</a>
-            <a href="#" class="aws-nav-item">Subnets</a>
-            <a href="#" class="aws-nav-item">Security</a>
-            <a href="#" class="aws-nav-item">Monitoring</a>
-        </nav>
     </header>
 
-    <div class="aws-container">
-        <!-- Global Error Box -->
-        <div id="globalErrorBox"></div>
+    <div class="aws-layout">
 
-        <!-- Page Header -->
-        <div class="aws-page-header">
-            <h1 class="aws-page-title">VPC Dashboard</h1>
-            <button id="btnReload" class="aws-btn aws-btn-secondary">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
-                </svg>
-                Reload Data
-            </button>
-        </div>
+        <!-- SIDEBAR -->
+        <aside class="aws-sidebar">
+            <ul>
+                <li class="active"><a href="{{ url_for('VPC_controller_bp.VPC_dashboard') }}">VPC Dashboard</a></li>
+                <li><a href="{{ url_for('VPC_controller_bp.ACL_dashboard') }}">ACL Dashboard</a></li>
+                <li><a href="{{ url_for('VPC_controller_bp.IGW_dashboard') }}">IGW Dashboard</a></li>
+                <li><a href="{{ url_for('VPC_controller_bp.RouteTable_dashboard') }}">Route Tables</a></li>
+            </ul>
+        </aside>
 
-        <!-- VPCs Section -->
-        <section class="aws-section">
-            <div class="aws-card">
+        <!-- MAIN CONTENT -->
+        <main class="aws-main">
+
+            <!-- ACTIONS -->
+            <section class="aws-card">
                 <div class="aws-card-header">
-                    <span>Virtual Private Clouds (VPCs)</span>
-                    <div class="aws-search">
-                        <span class="aws-search-icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                            </svg>
-                        </span>
-                        <input id="searchVPC" type="text" class="aws-input aws-search-input" placeholder="Search VPCs by ID or name">
-                    </div>
+                    <h2>Administración de VPCs</h2>
                 </div>
+                <div class="aws-card-body aws-card-body-actions">
+
+                    <div class="aws-actions-left">
+                        <button id="open-create-vpc-btn" class="aws-btn aws-btn-primary">Crear VPC</button>
+                    </div>
+
+                    <div class="aws-actions-right">
+                        <input id="vpc-search" class="aws-input" placeholder="Buscar por ID, nombre o CIDR">
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- TABLE -->
+            <section class="aws-card">
+                <div class="aws-card-header">
+                    <h2>Lista de VPCs</h2>
+                </div>
+
                 <div class="aws-card-body">
                     <table class="aws-table">
                         <thead>
                             <tr>
-                                <th>VPC ID</th>
-                                <th>Name</th>
-                                <th>CIDR Block</th>
-                                <th>State</th>
-                                <th>Actions</th>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>CIDR</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tblVPCs">
-                            <!-- VPC data will be loaded here -->
+                        <tbody id="vpc-tbody">
+                            <!-- RENDER DINÁMICO -->
                         </tbody>
                     </table>
-
-                    <!-- Expandable Create VPC Section -->
-                    <div class="aws-expandable">
-                        <div class="aws-expandable-header" onclick="toggleExpandable('createVPC')">
-                            <div class="aws-expandable-title">
-                                <svg class="aws-expandable-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                                </svg>
-                                Create VPC
-                            </div>
-                            <svg class="aws-expandable-icon" width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
-                            </svg>
-                        </div>
-                        <div class="aws-expandable-content" id="createVPC">
-                            <div class="aws-form-row">
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="vpcName">VPC Name</label>
-                                    <input id="vpcName" type="text" class="aws-input" placeholder="Enter VPC name">
-                                </div>
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="vpcCIDR">CIDR Block</label>
-                                    <input id="vpcCIDR" type="text" class="aws-input" placeholder="e.g., 10.0.0.0/16">
-                                </div>
-                                <div class="aws-form-col" style="display: flex; align-items: flex-end;">
-                                    <button id="btnCreateVPC" class="aws-btn aws-btn-primary">Create VPC</button>
-                                </div>
-                            </div>
-                            <p id="vpcMessage" style="margin-top: 8px; font-size: 14px; color: var(--aws-text-light);"></p>
-                        </div>
-                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Subnets Section -->
-        <section class="aws-section">
-            <div class="aws-card">
-                <div class="aws-card-header">
-                    <span>Subnets</span>
-                    <div class="aws-search">
-                        <span class="aws-search-icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                            </svg>
-                        </span>
-                        <input id="searchSubnet" type="text" class="aws-input aws-search-input" placeholder="Search subnets by ID or name">
-                    </div>
-                </div>
-                <div class="aws-card-body">
-                    <table class="aws-table">
-                        <thead>
-                            <tr>
-                                <th>VPC ID</th>
-                                <th>Subnet Name</th>
-                                <th>Subnet ID</th>
-                                <th>Availability Zone</th>
-                                <th>State</th>
-                                <th>CIDR Block</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tblSubnets">
-                            <!-- Subnet data will be loaded here -->
-                        </tbody>
-                    </table>
-
-                    <!-- Expandable Create Subnet Section -->
-                    <div class="aws-expandable">
-                        <div class="aws-expandable-header" onclick="toggleExpandable('createSubnet')">
-                            <div class="aws-expandable-title">
-                                <svg class="aws-expandable-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                                </svg>
-                                Create Subnet
-                            </div>
-                            <svg class="aws-expandable-icon" width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
-                            </svg>
-                        </div>
-                        <div class="aws-expandable-content" id="createSubnet">
-                            <div class="aws-form-row">
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="subnetVPCSelect">VPC</label>
-                                    <select id="subnetVPCSelect" class="aws-select">
-                                        <option value="">Select a VPC</option>
-                                    </select>
-                                </div>
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="subnetName">Subnet Name</label>
-                                    <input id="subnetName" type="text" class="aws-input" placeholder="Enter subnet name">
-                                </div>
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="subnetCIDR">CIDR Block</label>
-                                    <input id="subnetCIDR" type="text" class="aws-input" placeholder="e.g., 10.0.1.0/24">
-                                </div>
-                                <div class="aws-form-col" style="display: flex; align-items: flex-end;">
-                                    <button id="btnCreateSubnet" class="aws-btn aws-btn-primary">Create Subnet</button>
-                                </div>
-                            </div>
-                            <p id="subnetMessage" style="margin-top: 8px; font-size: 14px; color: var(--aws-text-light);"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ACLs Section -->
-        <section class="aws-section">
-            <div class="aws-card">
-                <div class="aws-card-header">
-                    <span>Network ACLs</span>
-                    <div class="aws-search">
-                        <span class="aws-search-icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                            </svg>
-                        </span>
-                        <input id="searchACL" type="text" class="aws-input aws-search-input" placeholder="Search ACLs by ID or name">
-                    </div>
-                </div>
-                <div class="aws-card-body">
-                    <table class="aws-table">
-                        <thead>
-                            <tr>
-                                <th>Actions</th>
-                                <th>ACL ID</th>
-                                <th>VPC ID</th>
-                                <th>Name</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tblACLs">
-                            <!-- ACL data will be loaded here -->
-                        </tbody>
-                    </table>
-
-                    <!-- Expandable Create ACL Section -->
-                    <div class="aws-expandable">
-                        <div class="aws-expandable-header" onclick="toggleExpandable('createACL')">
-                            <div class="aws-expandable-title">
-                                <svg class="aws-expandable-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                                </svg>
-                                Create Network ACL
-                            </div>
-                            <svg class="aws-expandable-icon" width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
-                            </svg>
-                        </div>
-                        <div class="aws-expandable-content" id="createACL">
-                            <div class="aws-form-row">
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclVPCSelect">VPC</label>
-                                    <select id="aclVPCSelect" class="aws-select">
-                                        <option value="">Select a VPC</option>
-                                    </select>
-                                </div>
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclName">ACL Name</label>
-                                    <input id="aclName" type="text" class="aws-input" placeholder="Enter ACL name">
-                                </div>
-                                <div class="aws-form-col" style="display: flex; align-items: flex-end;">
-                                    <button id="btnCreateACL" class="aws-btn aws-btn-primary">Create ACL</button>
-                                </div>
-                            </div>
-                            <p id="aclMessage" style="margin-top: 8px; font-size: 14px; color: var(--aws-text-light);"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ACL Rules Section -->
-        <section class="aws-section">
-            <div class="aws-card">
-                <div class="aws-card-header">
-                    <span>ACL Rules</span>
-                    <div class="aws-search">
-                        <span class="aws-search-icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                            </svg>
-                        </span>
-                        <input id="searchRule" type="text" class="aws-input aws-search-input" placeholder="Search rules by number, action, CIDR, etc.">
-                    </div>
-                </div>
-                <div class="aws-card-body">
-                    <table class="aws-table">
-                        <thead>
-                            <tr>
-                                <th>Actions</th>
-                                <th>ACL ID</th>
-                                <th>Rule #</th>
-                                <th>Type</th>
-                                <th>Action</th>
-                                <th>Protocol</th>
-                                <th>CIDR Block</th>
-                                <th>IPv6 CIDR</th>
-                                <th>Port Range</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tblACLRules">
-                            <!-- ACL Rules data will be loaded here -->
-                        </tbody>
-                    </table>
-
-                    <!-- Expandable Create ACL Rule Section -->
-                    <div class="aws-expandable">
-                        <div class="aws-expandable-header" onclick="toggleExpandable('createACLRule')">
-                            <div class="aws-expandable-title">
-                                <svg class="aws-expandable-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                                </svg>
-                                Create ACL Rule
-                            </div>
-                            <svg class="aws-expandable-icon" width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
-                            </svg>
-                        </div>
-                        <div class="aws-expandable-content" id="createACLRule">
-                            <div class="aws-form-row">
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclRuleSelect">Network ACL</label>
-                                    <select id="aclRuleSelect" class="aws-select">
-                                        <option value="">Select an ACL</option>
-                                    </select>
-                                </div>
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclRuleNumber">Rule Number</label>
-                                    <input id="aclRuleNumber" type="text" class="aws-input" placeholder="e.g., 100, 200">
-                                </div>
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclRuleCIDR">CIDR Block</label>
-                                    <input id="aclRuleCIDR" type="text" class="aws-input" placeholder="e.g., 0.0.0.0/0">
-                                </div>
-                            </div>
-                            <div class="aws-form-row">
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclRuleProtocol">Protocol</label>
-                                    <select id="aclRuleProtocol">
-    <option value="tcp">TCP</option>
-    <option value="udp">UDP</option>
-    <option value="icmp">ICMP</option>
-    <option value="all">ALL</option>
-</select>
-
-                                </div>
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclRuleAction">Action</label>
-                                    <input id="aclRuleAction" type="text" class="aws-input" placeholder="allow or deny">
-                                </div>
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclRuleEgress">Rule Type</label>
-                                    <select id="aclRuleEgress" class="aws-select">
-                                        <option value="false">Ingress</option>
-                                        <option value="true">Egress</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="aws-form-row">
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclRulePortFrom">Port Range From</label>
-                                    <input id="aclRulePortFrom" type="text" class="aws-input" placeholder="e.g., 80">
-                                </div>
-                                <div class="aws-form-col">
-                                    <label class="aws-label" for="aclRulePortTo">Port Range To</label>
-                                    <input id="aclRulePortTo" type="text" class="aws-input" placeholder="e.g., 80">
-                                </div>
-                                <div class="aws-form-col" style="display: flex; align-items: flex-end;">
-                                    <button id="btnCreateRule" class="aws-btn aws-btn-primary">Create Rule</button>
-                                </div>
-                            </div>
-                            <p id="ruleMessage" style="margin-top: 8px; font-size: 14px; color: var(--aws-text-light);"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </main>
     </div>
 
-    <!-- JavaScript para las secciones desplegables -->
-    <script>
-        function toggleExpandable(id) {
-            const element = document.getElementById(id);
-            const parent = element.parentElement;
-            parent.classList.toggle('expanded');
-        }
+    <!-- MODAL CREAR VPC -->
+    <div id="create-vpc-modal" class="aws-modal" style="display:none;">
+        <div class="aws-modal-content">
 
-        // Cerrar todas las secciones al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            const expandables = document.querySelectorAll('.aws-expandable');
-            expandables.forEach(expandable => {
-                expandable.classList.remove('expanded');
-            });
-        });
-    </script>
+            <div class="aws-modal-header">
+                <h3>Crear VPC</h3>
+                <button id="close-create-vpc-btn" class="aws-modal-close">&times;</button>
+            </div>
 
-    <!-- Cargar JS original -->
+            <div class="aws-modal-body">
+                <form id="create-vpc-form">
+
+                    <div class="aws-form-group">
+                        <label>Nombre de la VPC</label>
+                        <input id="vpc-name" class="aws-input" required>
+                    </div>
+
+                    <div class="aws-form-group">
+                        <label>CIDR Block</label>
+                        <input id="vpc-cidr" class="aws-input" placeholder="10.0.0.0/16" required>
+                    </div>
+
+                    <div class="aws-modal-footer">
+                        <button type="button" class="aws-btn" id="cancel-create-vpc">Cancelar</button>
+                        <button type="submit" class="aws-btn aws-btn-primary">Crear</button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- OVERLAY ERROR -->
+    <div id="error-overlay" class="aws-overlay" style="display:none;">
+        <div class="aws-overlay-content aws-overlay-error">
+            <h3>Error</h3>
+            <p id="error-message"></p>
+            <button id="close-error-btn" class="aws-btn aws-btn-primary">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- OVERLAY LOADING -->
+    <div id="loading-overlay" class="aws-overlay" style="display:none;">
+        <div class="aws-overlay-content aws-overlay-loading">
+            <div class="aws-spinner"></div>
+            <span>Cargando...</span>
+        </div>
+    </div>
+
     <script src="{{ url_for('VPC_controller_bp.static', filename='VPC_dashboard.js') }}"></script>
 </body>
 </html>

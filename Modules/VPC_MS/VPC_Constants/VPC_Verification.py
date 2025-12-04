@@ -1,10 +1,10 @@
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 
-def vpc_in_existance():
+def vpcs_in_existence():
     try:
-        vpc_cleint = boto3.client('ec2')
-        response = vpc_cleint.describe_vpcs()
+        vpc_client = boto3.client('ec2')
+        response = vpc_client.describe_vpcs()
         
         vpcs = {}
 
@@ -26,7 +26,7 @@ def vpc_in_existance():
                 'state': vpc['State']
             }
         
-        return vpcs   
+        return {"success": True, "data": vpcs}
     
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
@@ -41,7 +41,7 @@ def vpc_in_existance():
         print(f"Unexpected error {e}")
         return {"success": False, "error": str(e)}
 
-def subnets_in_existance():
+def subnets_in_existence():
     try:
         vpc_client = boto3.client('ec2')
         response = vpc_client.describe_subnets()
@@ -53,7 +53,9 @@ def subnets_in_existance():
             subnet_zone = subnet['AvailabilityZone']
             subnet_state = subnet['State']
             subnet_cidr = subnet['CidrBlock']
-            
+
+            subnet_name = 'No name'
+
             if 'Tags' in subnet:
                 for tag in subnet['Tags']:
                      if tag['Key'] == 'Name':
@@ -66,12 +68,12 @@ def subnets_in_existance():
             subnets[subnet_vpc].append({
                 "name" : subnet_name,
                 "subnet_id" : subnet_id,
-                "zone" : subnet_zone,
+                "availability_zone" : subnet_zone,
                 "state" : subnet_state,
-                "block" : subnet_cidr  
+                "cidr_block" : subnet_cidr  
             })
 
-        return subnets
+        return {"success": True, "data": subnets}
     
     except NoCredentialsError as e:
         print(f"There's been an error with the credentials:{e}")
@@ -84,3 +86,4 @@ def subnets_in_existance():
     except Exception as e:
         print(f"Unexpected error {e}")
         return {"success": False, "error": str(e)}
+    

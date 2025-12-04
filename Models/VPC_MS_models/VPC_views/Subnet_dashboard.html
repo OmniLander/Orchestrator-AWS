@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>AWS Orchestrator - Subnet Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('VPC_controller_bp.static', filename='theme.css') }}">
+</head>
+
+<body>
+
+<header class="aws-header">
+    <div class="aws-header-left">
+        <h1>Subnet Dashboard</h1>
+        <span class="aws-header-subtitle">Administración de Subnets por VPC</span>
+    </div>
+</header>
+
+<div class="aws-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="aws-sidebar">
+        <ul>
+            <li><a href="{{ url_for('VPC_controller_bp.VPC_dashboard') }}">VPC Dashboard</a></li>
+            <li class="active"><a href="#">Subnet Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.ACL_dashboard') }}">ACL Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.IGW_dashboard') }}">IGW Dashboard</a></li>
+            <li><a href="{{ url_for('VPC_controller_bp.RouteTable_dashboard') }}">Route Tables</a></li>
+        </ul>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="aws-main">
+
+        <!-- TOP ACTIONS -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <h2>Administración de Subnets</h2>
+            </div>
+
+            <div class="aws-card-body aws-card-body-actions">
+
+                <div class="aws-actions-left">
+                    <button id="open-create-subnet-btn" class="aws-btn aws-btn-primary">
+                        Crear Subnet
+                    </button>
+                </div>
+
+                <div class="aws-actions-right">
+                    <input id="subnet-search" class="aws-input" placeholder="Buscar por ID, nombre o CIDR">
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TABLE -->
+        <section class="aws-card">
+            <div class="aws-card-header">
+                <h2>Subnets Existentes</h2>
+            </div>
+
+            <div class="aws-card-body">
+
+                <table class="aws-table">
+                    <thead>
+                        <tr>
+                            <th>Subnet ID</th>
+                            <th>Nombre</th>
+                            <th>VPC</th>
+                            <th>CIDR</th>
+                            <th>Zona</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subnet-tbody">
+                        <!-- RENDER DINÁMICO -->
+                    </tbody>
+                </table>
+
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<!-- MODAL CREAR SUBNET -->
+<div id="create-subnet-modal" class="aws-modal" style="display:none;">
+    <div class="aws-modal-content">
+
+        <div class="aws-modal-header">
+            <h3>Crear Subnet</h3>
+            <button id="close-create-subnet-btn" class="aws-modal-close">&times;</button>
+        </div>
+
+        <div class="aws-modal-body">
+
+            <form id="create-subnet-form">
+
+                <div class="aws-form-group">
+                    <label>Nombre de la Subnet</label>
+                    <input id="subnet-name" class="aws-input" required>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>CIDR Block</label>
+                    <input id="subnet-cidr" class="aws-input" placeholder="10.0.1.0/24" required>
+                </div>
+
+                <div class="aws-form-group">
+                    <label>Selecciona la VPC</label>
+                    <select id="subnet-vpc-select" class="aws-select"></select>
+                </div>
+
+                <div class="aws-modal-footer">
+                    <button type="button" id="cancel-create-subnet" class="aws-btn">Cancelar</button>
+                    <button type="submit" class="aws-btn aws-btn-primary">Crear</button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- OVERLAY ERROR -->
+<div id="error-overlay" class="aws-overlay" style="display:none;">
+    <div class="aws-overlay-content aws-overlay-error">
+        <h3>Error</h3>
+        <p id="error-message"></p>
+        <button id="close-error-btn" class="aws-btn aws-btn-primary">Cerrar</button>
+    </div>
+</div>
+
+<!-- OVERLAY LOADING -->
+<div id="loading-overlay" class="aws-overlay" style="display:none;">
+    <div class="aws-overlay-content aws-overlay-loading">
+        <div class="aws-spinner"></div>
+        <span>Cargando...</span>
+    </div>
+</div>
+
+<script src="{{ url_for('VPC_controller_bp.static', filename='Subnet_dashboard.js') }}"></script>
+</body>
+</html>
