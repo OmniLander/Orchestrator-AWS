@@ -3,7 +3,7 @@ import requests
 
 def call_keys():
     try:
-        resp = requests.get("http://192.168.100.48:5001/Keys_in_existance", timeout=5)
+        resp = requests.get("http://44.211.83.151:5001/Keys_in_existance", timeout=5)
         reply_data = resp.json() 
         return reply_data
 
@@ -12,7 +12,7 @@ def call_keys():
 
 def call_SG():
     try:
-        resp = requests.get("http://192.168.100.48:5003/SG_in_existance", timeout=5)
+        resp = requests.get("http://44.211.83.151:5003/SG_in_existance", timeout=5)
         reply_data = resp.json()
         return reply_data
     
@@ -21,7 +21,7 @@ def call_SG():
 
 def call_subnet():
     try:
-        resp = requests.get("http://192.168.100.48:5004/subnets_in_existence", timeout=5)
+        resp = requests.get("http://44.211.83.151:5004/subnets_in_existence", timeout=5)
         reply_data = resp.json()
         return reply_data
     
@@ -30,7 +30,7 @@ def call_subnet():
 
 def call_vpc():
     try:
-        resp = requests.get("http://192.168.100.48:5004/vpcs_in_existence", timeout=5)
+        resp = requests.get("http://44.211.83.151:5004/vpcs_in_existence", timeout=5)
         reply_data = resp.json()
         return reply_data
     
